@@ -14,6 +14,8 @@ function showShopView(content) {
         shopItems[category].forEach(item => {
             const owned = player.equipment[category] >= item.level;
             const canBuy = player.money >= item.cost && player.equipment[category] === item.level - 1;
+            const canSell = player.equipment[category] === item.level;
+            const sellPrice = Math.floor(item.cost * 0.6);
             html += `
                 <div class="shop-item ${owned ? 'owned' : ''}">
                     <div style="color: #ff0000; font-weight: bold; font-size: 1.2em; margin-bottom: 10px;">${item.name}</div>
@@ -21,7 +23,9 @@ function showShopView(content) {
                     <div style="color: #ff6b6b; margin: 5px 0; font-size: 0.9em;">Bonus: +${item.bonus}%</div>
                     <div style="color: #ffa500; margin: 5px 0;">Prix: ${item.cost} €</div>
                     <div style="color: #ff9999; margin: 5px 0; font-size: 0.85em;">Maintenance: ${item.level * 50} €</div>
-                    ${owned ? '<div style="color: #00ff00; font-weight: bold;">✓ POSSÉDÉ</div>' :
+                    ${owned ? `<div style="color: #00ff00; font-weight: bold;">✓ POSSÉDÉ</div>
+                               <div style="color: #888; margin: 5px 0; font-size: 0.85em;">Revente: ${sellPrice} €</div>
+                               <button onclick="sellEquipment('${category}', ${item.level})" style="background: linear-gradient(135deg, #8b6914 0%, #daa520 100%);">Revendre</button>` :
                       `<button onclick="buyEquipment('${category}', ${item.level})" ${!canBuy ? 'disabled' : ''}>Acheter</button>`}
                 </div>`;
         });
@@ -37,6 +41,18 @@ function buyEquipment(category, level) {
     
     player.money -= item.cost;
     player.equipment[category] = level;
+    updateDisplay();
+    showView('shop');
+}
+
+// Vente d'équipement
+function sellEquipment(category, level) {
+    const item = shopItems[category][level - 1];
+    if (player.equipment[category] !== level) return;
+    
+    const sellPrice = Math.floor(item.cost * 0.6);
+    player.money += sellPrice;
+    player.equipment[category] = level - 1;
     updateDisplay();
     showView('shop');
 }

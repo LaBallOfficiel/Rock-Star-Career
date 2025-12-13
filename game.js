@@ -6,6 +6,7 @@ function startGame() {
     
     player.name = name;
     player.instrument = instrument;
+    player.isDead = false;
     
     document.getElementById('creationScreen').classList.remove('active');
     document.getElementById('gameScreen').classList.add('active');
@@ -56,7 +57,7 @@ function passTime() {
     
     player.health = Math.max(0, player.health);
     
-    if (player.health <= 0) gameOver();
+    if (player.health <= 0 || player.money < 0) gameOver();
     
     if (gameTime % 30 === 0) saveGame();
     
@@ -76,7 +77,10 @@ function updateCooldowns() {
     if (player.albumCooldown > 0) {
         player.albumCooldown--;
     }
-    if (currentView === 'training' || currentView === 'concert' || currentView === 'albums') {
+    if (player.restCooldown > 0) {
+        player.restCooldown--;
+    }
+    if (currentView === 'training' || currentView === 'concert' || currentView === 'albums' || currentView === 'lifestyle') {
         showView(currentView);
     }
 }
@@ -95,8 +99,12 @@ function updateAlbums() {
 
 // Fin de partie
 function gameOver() {
+    player.isDead = true;
+    
     let cause = '';
-    if (player.addiction > 70) {
+    if (player.money < 0) {
+        cause = 'Faillite... Tu es dans le négatif et ruiné.';
+    } else if (player.addiction > 70) {
         cause = 'Overdose... La drogue a eu raison de toi.';
     } else if (player.age > 70) {
         cause = 'Vieillesse... Tu as vécu ta vie à fond.';
@@ -130,7 +138,7 @@ function gameOver() {
     document.getElementById('deathStats').innerHTML = `
         <div style="color: #fff;">
             <p>💰 Argent gagné: ${player.money} €</p>
-            <p>👥 Fans totaux: ${player.fans}</p>
+            <p>💥 Fans totaux: ${player.fans}</p>
             <p>🎵 Concerts joués: ${player.concertsPlayed}</p>
             <p>💿 Albums sortis: ${player.albums.length}</p>
             <p>⭐ Popularité maximale: ${player.popularity}</p>

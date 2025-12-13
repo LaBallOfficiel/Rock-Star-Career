@@ -10,7 +10,7 @@ function showConcertView(content) {
         </div>` : ''}
         <div class="stats-compact">
             <div class="stat-row"><span class="stat-label">💰 Argent</span><span class="stat-value">${player.money} €</span></div>
-            <div class="stat-row"><span class="stat-label">👥 Fans</span><span class="stat-value">${player.fans}</span></div>
+            <div class="stat-row"><span class="stat-label">💥 Fans</span><span class="stat-value">${player.fans}</span></div>
             <div class="stat-row"><span class="stat-label">⭐ Popularité</span><span class="stat-value">${player.popularity}</span></div>
             <div class="stat-row"><span class="stat-label">🎵 Concerts</span><span class="stat-value">${player.concertsPlayed}</span></div>
         </div>
@@ -59,6 +59,10 @@ function doConcert(type) {
         newFans = Math.floor(newFans * player.group.bonus);
     }
     
+    // Bonus marketing
+    const marketingBonus = 1 + (player.skills.marketing / 200);
+    player.popularity += Math.floor(newFans / 10 * marketingBonus);
+    
     // Pénalité en cas d'échec
     if (!success) {
         revenue = Math.max(50, Math.floor(revenue * 0.3));
@@ -69,11 +73,11 @@ function doConcert(type) {
     // Application des gains
     player.money += revenue;
     player.fans += newFans;
-    player.popularity += Math.floor(newFans / 10);
     player.concertsPlayed++;
     
-    // Coût en santé
-    const healthCost = Math.floor(Math.random() * 3) + 1 + Math.floor(venue.difficulty * 5);
+    // Coût en santé (réduit par l'endurance)
+    const enduranceReduction = 1 - (player.skills.endurance / 200);
+    const healthCost = Math.floor((Math.floor(Math.random() * 3) + 1 + Math.floor(venue.difficulty * 5)) * enduranceReduction);
     player.health -= healthCost;
     player.health = Math.max(0, player.health);
     
@@ -86,7 +90,7 @@ function doConcert(type) {
             <p><strong>Lieu:</strong> ${venue.name}</p>
             <p><strong>Performance:</strong> ${Math.floor(quality * 100)}%</p>
             <p class="positive"><strong>💰 Gains:</strong> +${revenue} €</p>
-            <p class="positive"><strong>👥 Nouveaux fans:</strong> +${newFans}</p>
+            <p class="positive"><strong>💥 Nouveaux fans:</strong> +${newFans}</p>
             <p class="negative"><strong>❤️ Santé:</strong> -${healthCost}%</p>
             ${!success ? '<p class="negative"><strong>⭐ Popularité:</strong> Baisse !</p>' : ''}
             <p style="color: #ffa500; margin-top: 10px;">⏳ Prochain concert dans 30 secondes</p>

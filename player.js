@@ -10,13 +10,15 @@ let player = {
     popularity: 0, 
     concertsPlayed: 0, 
     group: null,
-    skills: { technique: 10, scene: 10, composition: 10, charisme: 10 },
+    skills: { technique: 10, scene: 10, composition: 10, charisme: 10, marketing: 10, endurance: 10 },
     equipment: { instrument: 0, amplifier: 0, lights: 0, pyrotechnics: 0, soundSystem: 0, transport: 0, studio: 0 },
-    trainingCooldowns: { technique: 0, scene: 0, composition: 0, charisme: 0 },
+    trainingCooldowns: { technique: 0, scene: 0, composition: 0, charisme: 0, marketing: 0, endurance: 0 },
     daysWithoutDrugs: 0,
     concertCooldown: 0,
     albums: [],
-    albumCooldown: 0
+    albumCooldown: 0,
+    restCooldown: 0,
+    isDead: false
 };
 
 // Variables globales
@@ -66,15 +68,26 @@ function calculateMaintenance() {
 
 // Sauvegarde et chargement
 function saveGame() {
-    localStorage.setItem('currentGame', JSON.stringify(player));
+    if (!player.isDead) {
+        localStorage.setItem('currentGame', JSON.stringify(player));
+    }
 }
 
 function loadGame() {
     const saved = localStorage.getItem('currentGame');
     if (saved) {
+        const savedPlayer = JSON.parse(saved);
+        
+        // Vérifier si le joueur sauvegardé est mort
+        if (savedPlayer.isDead || savedPlayer.health <= 0 || savedPlayer.money < 0) {
+            localStorage.removeItem('currentGame');
+            return false;
+        }
+        
         const confirmation = confirm('Une sauvegarde existe. Voulez-vous la charger ?');
         if (confirmation) {
-            player = JSON.parse(saved);
+            player = savedPlayer;
+            player.isDead = false;
             document.getElementById('creationScreen').classList.remove('active');
             document.getElementById('gameScreen').classList.add('active');
             updateDisplay();

@@ -85,7 +85,9 @@ const skills = [
     { key: 'technique', name: 'Technique', icon: '🎸', effect: 'Améliore la qualité des concerts' },
     { key: 'scene', name: 'Présence Scénique', icon: '🔥', effect: 'Augmente l\'impact sur les fans' },
     { key: 'composition', name: 'Composition', icon: '🎵', effect: 'Permet de meilleures performances' },
-    { key: 'charisme', name: 'Charisme', icon: '⭐', effect: 'Facilite l\'entrée dans les groupes' }
+    { key: 'charisme', name: 'Charisme', icon: '⭐', effect: 'Facilite l\'entrée dans les groupes' },
+    { key: 'marketing', name: 'Marketing', icon: '📢', effect: 'Augmente la popularité' },
+    { key: 'endurance', name: 'Endurance', icon: '💪', effect: 'Réduit la perte de santé' }
 ];
 
 // Catégories de la boutique

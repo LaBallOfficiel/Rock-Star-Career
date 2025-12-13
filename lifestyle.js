@@ -2,6 +2,9 @@
 function showLifestyleView(content) {
     content.innerHTML = `
         <h2 style="color: #ff0000; margin-bottom: 20px;">💊 Style de vie Rock'n'Roll</h2>
+        ${player.restCooldown > 0 ? `<div style="background: rgba(0, 139, 139, 0.3); border: 2px solid #00ffff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #00ffff;">
+            😴 Repos en cours... ${player.restCooldown}s restantes
+        </div>` : ''}
         <div style="background: rgba(255, 0, 0, 0.2); border: 2px solid #ff0000; padding: 20px; margin-bottom: 20px; border-radius: 5px;">
             <h3 style="color: #ff0000; margin-bottom: 15px;">⚠️ ATTENTION</h3>
             <p style="color: #ff6b6b;">Les drogues peuvent donner un boost temporaire, mais augmentent l'addiction et détruisent ta santé !</p>
@@ -41,10 +44,10 @@ function showLifestyleView(content) {
         <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-top: 20px;">
             <h3 style="color: #ff6b6b; margin-bottom: 10px;">Autres activités</h3>
             <div class="action-grid">
-                <button onclick="rest()" style="background: linear-gradient(135deg, #0a3d5c 0%, #0077bb 100%);">
+                <button onclick="rest()" ${player.restCooldown > 0 ? 'disabled' : ''} style="background: linear-gradient(135deg, #0a3d5c 0%, #0077bb 100%);">
                     😴 Se Reposer<br>
                     <small>+10% Santé</small><br>
-                    <small>Repos 60s</small><br>
+                    <small>Repos 15s</small><br>
                     <small>Gratuit</small>
                 </button>
                 <button onclick="party()" style="background: linear-gradient(135deg, #5c0a5c 0%, #9900ff 100%);">
@@ -118,20 +121,19 @@ function goRehab() {
 
 // Se reposer
 function rest() {
-    if (player.concertCooldown > 0 || player.albumCooldown > 0) {
-        alert('Tu es déjà occupé !');
+    if (player.restCooldown > 0) {
+        alert('Tu te reposes déjà !');
         return;
     }
     
     player.health = Math.min(100, player.health + 10);
-    player.concertCooldown = 60;
-    player.albumCooldown = 60;
+    player.restCooldown = 15;
     
     document.getElementById('lifestyleResult').innerHTML = `
         <div style="background: rgba(0, 100, 139, 0.3); border: 2px solid #00aaff; padding: 15px; margin-top: 20px; border-radius: 5px;">
             <h3 style="color: #00aaff; margin-bottom: 10px;">😴 Repos bien mérité</h3>
             <p class="positive">+10% Santé</p>
-            <p style="color: #ffa500;">⏳ 60 secondes de repos</p>
+            <p style="color: #ffa500;">⏳ 15 secondes de repos</p>
         </div>
     `;
     
