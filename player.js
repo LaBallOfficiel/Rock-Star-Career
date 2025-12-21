@@ -92,13 +92,50 @@ function loadGame() {
             player = savedPlayer;
             player.isDead = false;
             
-            // Assurer que infiniteStats existe
+            // Migration des données : ajouter les propriétés manquantes
             if (player.infiniteStats === undefined) {
                 player.infiniteStats = false;
             }
             if (player.infiniteMoney === undefined) {
                 player.infiniteMoney = false;
             }
+            if (player.daysWithoutDrugs === undefined) {
+                player.daysWithoutDrugs = 0;
+            }
+            if (player.albums === undefined) {
+                player.albums = [];
+            }
+            if (player.albumCooldown === undefined) {
+                player.albumCooldown = 0;
+            }
+            if (player.restCooldown === undefined) {
+                player.restCooldown = 0;
+            }
+            if (player.partyCooldown === undefined) {
+                player.partyCooldown = 0;
+            }
+            if (player.equipment.studio === undefined) {
+                player.equipment.studio = 0;
+            }
+            
+            // Migration des albums : ajouter les nouvelles propriétés
+            if (player.albums && player.albums.length > 0) {
+                player.albums = player.albums.map(album => {
+                    if (album.albumTypeKey === undefined) {
+                        album.albumTypeKey = 'album';
+                    }
+                    if (album.revenuePerMinute === undefined) {
+                        album.revenuePerMinute = 0;
+                    }
+                    if (album.fansPerMinute === undefined) {
+                        album.fansPerMinute = 0;
+                    }
+                    return album;
+                });
+            }
+            
+            // Sauvegarder les données migrées
+            saveGame();
             
             document.getElementById('creationScreen').classList.remove('active');
             document.getElementById('gameScreen').classList.add('active');
