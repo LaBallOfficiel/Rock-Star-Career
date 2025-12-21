@@ -2,11 +2,12 @@
 function showAlbumsView(content) {
     const studioLevel = player.equipment.studio;
     const instrumentLevel = player.equipment.instrument;
+    const activityMsg = getCurrentActivityMessage();
     
     content.innerHTML = `
         <h2 style="color: #ff0000; margin-bottom: 20px;">💿 Production d'Albums</h2>
-        ${player.albumCooldown > 0 ? `<div style="background: rgba(255, 165, 0, 0.3); border: 2px solid #ffa500; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #ffa500;">
-            ⏳ Enregistrement en cours... ${player.albumCooldown}s restantes
+        ${activityMsg ? `<div style="background: rgba(255, 165, 0, 0.3); border: 2px solid #ffa500; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #ffa500;">
+            ${activityMsg}
         </div>` : ''}
         <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
             <p style="color: #ff6b6b;">🎙️ Studio: Niveau ${studioLevel}</p>
@@ -17,7 +18,7 @@ function showAlbumsView(content) {
         <h3 style="color: #ff6b6b; margin: 20px 0 10px 0;">Types d'Albums</h3>
         <div class="shop-grid">
             ${albumTypes.map(albumType => {
-                const canRecord = player.albumCooldown === 0 && 
+                const canRecord = !isPlayerBusy() && 
                                 player.money >= albumType.cost && 
                                 studioLevel >= albumType.minStudio;
                 return `
@@ -43,7 +44,7 @@ function showAlbumsView(content) {
                             </div>
                             <div style="text-align: right;">
                                 ${album.isPopular ? 
-                                    '<div style="color: #00ff00; font-weight: bold;">🔥 POPULAIRE</div><div style="color: #00ff00; font-size: 0.85em;">+' + Math.floor(album.quality * 20) + '€ & +' + Math.floor(album.quality * 2) + ' fans/min</div>' : 
+                                    `<div style="color: #00ff00; font-weight: bold;">🔥 POPULAIRE</div><div style="color: #00ff00; font-size: 0.85em;">+${album.revenuePerMinute}€/min & +${album.fansPerMinute} fans/min</div>` : 
                                     '<div style="color: #ffa500;">Album standard</div>'}
                             </div>
                         </div>
@@ -57,8 +58,13 @@ function showAlbumsView(content) {
 
 // Enregistrement d'un album
 function recordAlbum(type) {
+    if (isPlayerBusy()) {
+        alert('Tu es déjà occupé ! Termine ton activité en cours avant d\'enregistrer un album.');
+        return;
+    }
+    
     const albumType = albumTypes.find(a => a.type === type);
-    if (!albumType || player.money < albumType.cost || player.albumCooldown > 0) return;
+    if (!albumType || player.money < albumType.cost) return;
     
     if (player.equipment.studio < albumType.minStudio) {
         alert(`Tu as besoin d'un studio de niveau ${albumType.minStudio} minimum !`);
@@ -68,16 +74,69 @@ function recordAlbum(type) {
     player.money -= albumType.cost;
     player.albumCooldown = albumType.duration;
     
-    // Calcul de la qualité
+    // Calcul de la qualité (plus difficile à obtenir)
     const avgSkill = (player.skills.technique + player.skills.composition) / 2;
-    const equipBonus = (player.equipment.studio * 20) + (player.equipment.instrument * 10);
+    const equipBonus = (player.equipment.studio * 15) + (player.equipment.instrument * 8);
     const groupBonus = player.group ? player.group.bonus : 1;
     
-    let quality = Math.floor((avgSkill + equipBonus) * groupBonus * (0.5 + Math.random() * 0.5));
+    // Formule plus stricte avec un plafond plus bas et plus de variabilité
+    let quality = Math.floor((avgSkill * 0.6 + equipBonus * 0.7) * groupBonus * (0.3 + Math.random() * 0.4));
     quality = Math.min(100, quality);
     
-    const isPopular = quality >= 60;
+    const isPopular = quality >= 70; // Seuil augmenté de 60 à 70
     const albumName = generateAlbumName();
+    
+    // Calcul des revenus par minute selon le type d'album
+    let maxRevenuePerMinute = 0;
+    let immediateRevenue = 0;
+    let revenuePerMinute = 0;
+    let fansPerMinute = 0;
+    
+    switch(albumType.type) {
+        case 'demo':
+            // Démo : paiement unique maximum 600€
+            immediateRevenue = Math.floor((quality / 100) * 600 * groupBonus);
+            maxRevenuePerMinute = 0;
+            break;
+        case 'ep':
+            // EP : maximum 2000€/min
+            maxRevenuePerMinute = 2000;
+            break;
+        case 'album':
+            // Album studio : maximum 15000€/min
+            maxRevenuePerMinute = 15000;
+            break;
+        case 'live':
+            // Album live : maximum 7000€/min
+            maxRevenuePerMinute = 7000;
+            break;
+        case 'double':
+            // Double album : maximum 50000€/min
+            maxRevenuePerMinute = 50000;
+            break;
+    }
+    
+    // Calcul des revenus par minute pour les albums populaires (sauf démo)
+    if (isPopular && albumType.type !== 'demo') {
+        revenuePerMinute = Math.floor((quality / 100) * maxRevenuePerMinute);
+        fansPerMinute = Math.floor(revenuePerMinute / 50); // Ratio: 1 fan pour 50€
+    }
+    
+    // Gains immédiats
+    if (albumType.type === 'demo') {
+        // Démo: seulement paiement immédiat
+        const immediateFans = Math.floor((quality / 100) * 100 * groupBonus);
+        player.fans += immediateFans;
+        player.money += immediateRevenue;
+    } else {
+        // Autres albums: gains immédiats réduits
+        immediateRevenue = Math.floor(quality * 30 * groupBonus);
+        const immediateFans = Math.floor(quality * 3 * groupBonus);
+        player.fans += immediateFans;
+        player.money += immediateRevenue;
+    }
+    
+    player.popularity += Math.floor(quality / 8);
     
     const album = {
         name: albumName,
@@ -85,18 +144,13 @@ function recordAlbum(type) {
         tracks: albumType.tracks,
         quality: quality,
         isPopular: isPopular,
+        albumTypeKey: albumType.type,
+        revenuePerMinute: revenuePerMinute,
+        fansPerMinute: fansPerMinute,
         date: new Date().toLocaleString('fr-FR')
     };
     
     player.albums.push(album);
-    
-    // Gains immédiats
-    const immediateFans = Math.floor(quality * 5 * groupBonus);
-    const immediateRevenue = Math.floor(quality * 50 * groupBonus);
-    
-    player.fans += immediateFans;
-    player.money += immediateRevenue;
-    player.popularity += Math.floor(quality / 5);
     
     document.getElementById('albumResult').innerHTML = `
         <div class="concert-result">
@@ -106,9 +160,13 @@ function recordAlbum(type) {
             <p><strong>Album:</strong> ${albumName}</p>
             <p><strong>Type:</strong> ${albumType.name} (${albumType.tracks} titres)</p>
             <p><strong>Qualité:</strong> ${quality}%</p>
-            <p class="positive"><strong>💰 Ventes immédiates:</strong> +${immediateRevenue} €</p>
-            <p class="positive"><strong>👥 Nouveaux fans:</strong> +${immediateFans}</p>
-            ${isPopular ? '<p class="positive"><strong>🔥 Album populaire:</strong> Revenus passifs activés !</p>' : '<p class="negative"><strong>Album standard:</strong> Pas de revenus passifs</p>'}
+            <p class="positive"><strong>💰 ${albumType.type === 'demo' ? 'Ventes uniques' : 'Ventes immédiates'}:</strong> +${immediateRevenue} €</p>
+            <p class="positive"><strong>👥 Nouveaux fans:</strong> +${albumType.type === 'demo' ? Math.floor((quality / 100) * 100 * groupBonus) : Math.floor(quality * 3 * groupBonus)}</p>
+            ${isPopular && albumType.type !== 'demo' ? 
+                `<p class="positive"><strong>🔥 Album populaire:</strong> +${revenuePerMinute}€/min & +${fansPerMinute} fans/min</p>` : 
+                albumType.type === 'demo' ? 
+                    '<p class="negative"><strong>Démo:</strong> Pas de revenus passifs</p>' :
+                    '<p class="negative"><strong>Album standard:</strong> Pas de revenus passifs</p>'}
             <p style="color: #ffa500; margin-top: 10px;">⏳ Prochain album dans ${albumType.duration} secondes</p>
         </div>`;
     

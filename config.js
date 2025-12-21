@@ -72,12 +72,12 @@ const drugs = {
 
 // Configuration des lieux de concerts
 const venues = {
-    bar: { name: 'Bar Local', revenue: 100, fans: 20, difficulty: 0.3 },
-    club: { name: 'Club', revenue: 350, fans: 100, difficulty: 0.5 },
-    salle: { name: 'Grande Salle', revenue: 1750, fans: 400, difficulty: 0.65 },
-    theatre: { name: 'Théâtre', revenue: 4500, fans: 800, difficulty: 0.7 },
-    arena: { name: 'Arena', revenue: 11500, fans: 2000, difficulty: 0.75 },
-    festival: { name: 'Festival', revenue: 42500, fans: 6000, difficulty: 0.85 }
+    bar: { name: 'Bar Local', revenue: 100, fans: 20, difficulty: 0.3, cooldown: 15 },
+    club: { name: 'Club', revenue: 350, fans: 100, difficulty: 0.5, cooldown: 20 },
+    salle: { name: 'Grande Salle', revenue: 1750, fans: 400, difficulty: 0.65, cooldown: 30 },
+    theatre: { name: 'Théâtre', revenue: 4500, fans: 800, difficulty: 0.7, cooldown: 45 },
+    arena: { name: 'Arena', revenue: 11500, fans: 2000, difficulty: 0.75, cooldown: 60 },
+    festival: { name: 'Festival', revenue: 42500, fans: 6000, difficulty: 0.85, cooldown: 90 }
 };
 
 // Configuration des compétences

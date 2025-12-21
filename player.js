@@ -18,7 +18,10 @@ let player = {
     albums: [],
     albumCooldown: 0,
     restCooldown: 0,
-    isDead: false
+    partyCooldown: 0,
+    isDead: false,
+    infiniteMoney: false,
+    infiniteStats: false
 };
 
 // Variables globales
@@ -79,7 +82,7 @@ function loadGame() {
         const savedPlayer = JSON.parse(saved);
         
         // Vérifier si le joueur sauvegardé est mort
-        if (savedPlayer.isDead || savedPlayer.health <= 0 || savedPlayer.money < 0) {
+        if (savedPlayer.isDead || savedPlayer.health <= 0 || (savedPlayer.money < 0 && !savedPlayer.infiniteStats)) {
             localStorage.removeItem('currentGame');
             return false;
         }
@@ -88,6 +91,15 @@ function loadGame() {
         if (confirmation) {
             player = savedPlayer;
             player.isDead = false;
+            
+            // Assurer que infiniteStats existe
+            if (player.infiniteStats === undefined) {
+                player.infiniteStats = false;
+            }
+            if (player.infiniteMoney === undefined) {
+                player.infiniteMoney = false;
+            }
+            
             document.getElementById('creationScreen').classList.remove('active');
             document.getElementById('gameScreen').classList.add('active');
             updateDisplay();

@@ -8,6 +8,12 @@ function startGame() {
     player.instrument = instrument;
     player.isDead = false;
     
+    // Code secret : stats infinies
+    if (name === 'Konami Code') {
+        player.infiniteMoney = true;
+        player.infiniteStats = true;
+    }
+    
     document.getElementById('creationScreen').classList.remove('active');
     document.getElementById('gameScreen').classList.add('active');
     updateDisplay();
@@ -25,13 +31,21 @@ function startGame() {
 function passTime() {
     player.age += 0.15;
     
+    // Code secret : stats infinies
+    if (player.infiniteStats) {
+        player.money = 999999;
+        player.fans = 999999;
+        player.popularity = 999999;
+    }
+    
     // Gestion de l'addiction
     if (player.addiction > 0) {
         player.health -= player.addiction / 15;
         player.daysWithoutDrugs = 0;
         if (Math.random() < 0.1) player.addiction = Math.max(0, player.addiction - 0.5);
     } else {
-        player.daysWithoutDrugs++;
+        // 0.15 an = environ 55 jours, donc on incrémente proportionnellement
+        player.daysWithoutDrugs += 55;
         if (player.health < 100) player.health += 0.5;
     }
     
@@ -80,6 +94,9 @@ function updateCooldowns() {
     if (player.restCooldown > 0) {
         player.restCooldown--;
     }
+    if (player.partyCooldown > 0) {
+        player.partyCooldown--;
+    }
     if (currentView === 'training' || currentView === 'concert' || currentView === 'albums' || currentView === 'lifestyle') {
         showView(currentView);
     }
@@ -88,13 +105,50 @@ function updateCooldowns() {
 // Mise à jour des revenus des albums
 function updateAlbums() {
     player.albums.forEach(album => {
-        if (album.isPopular && gameTime % 60 === 0) {
-            const revenue = Math.floor(album.quality * 20);
-            const newFans = Math.floor(album.quality * 2);
+        // Revenus par minute pour les albums populaires (sauf démos)
+        if (album.isPopular && album.albumTypeKey !== 'demo' && gameTime % 60 === 0) {
+            const revenue = album.revenuePerMinute;
+            const newFans = album.fansPerMinute;
             player.money += revenue;
             player.fans += newFans;
         }
     });
+}
+
+// Vérifier si le joueur est occupé
+function isPlayerBusy() {
+    return player.concertCooldown > 0 || player.albumCooldown > 0 || player.restCooldown > 0 || player.partyCooldown > 0 || hasTrainingCooldown();
+}
+
+// Vérifier si un entraînement est en cours
+function hasTrainingCooldown() {
+    for (let skill in player.trainingCooldowns) {
+        if (player.trainingCooldowns[skill] > 0) return true;
+    }
+    return false;
+}
+
+// Obtenir le message d'activité en cours
+function getCurrentActivityMessage() {
+    if (player.concertCooldown > 0) {
+        return `⏳ Concert en cours... ${player.concertCooldown}s restantes`;
+    }
+    if (player.albumCooldown > 0) {
+        return `⏳ Enregistrement en cours... ${player.albumCooldown}s restantes`;
+    }
+    if (player.restCooldown > 0) {
+        return `⏳ Repos en cours... ${player.restCooldown}s restantes`;
+    }
+    if (player.partyCooldown > 0) {
+        return `⏳ Fête en cours... ${player.partyCooldown}s restantes`;
+    }
+    for (let skill in player.trainingCooldowns) {
+        if (player.trainingCooldowns[skill] > 0) {
+            const skillName = skills.find(s => s.key === skill)?.name || skill;
+            return `⏳ Entraînement ${skillName} en cours... ${player.trainingCooldowns[skill]}s restantes`;
+        }
+    }
+    return null;
 }
 
 // Fin de partie
@@ -138,7 +192,7 @@ function gameOver() {
     document.getElementById('deathStats').innerHTML = `
         <div style="color: #fff;">
             <p>💰 Argent gagné: ${player.money} €</p>
-            <p>💥 Fans totaux: ${player.fans}</p>
+            <p>👥 Fans totaux: ${player.fans}</p>
             <p>🎵 Concerts joués: ${player.concertsPlayed}</p>
             <p>💿 Albums sortis: ${player.albums.length}</p>
             <p>⭐ Popularité maximale: ${player.popularity}</p>

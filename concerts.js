@@ -2,15 +2,16 @@
 function showConcertView(content) {
     const equipBonus = getTotalEquipmentBonus();
     const avgSkill = (player.skills.technique + player.skills.scene + player.skills.composition + player.skills.charisme) / 4;
+    const activityMsg = getCurrentActivityMessage();
     
     content.innerHTML = `
         <h2 style="color: #ff0000; margin-bottom: 20px;">🎤 Concerts</h2>
-        ${player.concertCooldown > 0 ? `<div style="background: rgba(255, 165, 0, 0.3); border: 2px solid #ffa500; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #ffa500;">
-            ⏳ Concert en cours... ${player.concertCooldown}s restantes
+        ${activityMsg ? `<div style="background: rgba(255, 165, 0, 0.3); border: 2px solid #ffa500; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #ffa500;">
+            ${activityMsg}
         </div>` : ''}
         <div class="stats-compact">
             <div class="stat-row"><span class="stat-label">💰 Argent</span><span class="stat-value">${player.money} €</span></div>
-            <div class="stat-row"><span class="stat-label">💥 Fans</span><span class="stat-value">${player.fans}</span></div>
+            <div class="stat-row"><span class="stat-label">👥 Fans</span><span class="stat-value">${player.fans}</span></div>
             <div class="stat-row"><span class="stat-label">⭐ Popularité</span><span class="stat-value">${player.popularity}</span></div>
             <div class="stat-row"><span class="stat-label">🎵 Concerts</span><span class="stat-value">${player.concertsPlayed}</span></div>
         </div>
@@ -20,25 +21,28 @@ function showConcertView(content) {
             ${player.group ? `<p style="color: #ff6b6b;">Bonus groupe: x${player.group.bonus}</p>` : ''}
         </div>
         <div class="action-grid">
-            <button onclick="doConcert('bar')" ${player.concertCooldown > 0 ? 'disabled' : ''}>🍺 Bar Local<br><small>50-150€</small><br><small>30s</small></button>
-            <button onclick="doConcert('club')" ${player.popularity < 50 || player.concertCooldown > 0 ? 'disabled' : ''}>🎵 Club<br><small>200-500€</small><br><small>30s</small></button>
-            <button onclick="doConcert('salle')" ${player.popularity < 200 || player.concertCooldown > 0 ? 'disabled' : ''}>🏛️ Grande Salle<br><small>1000-2500€</small><br><small>30s</small></button>
-            <button onclick="doConcert('theatre')" ${player.popularity < 500 || player.concertCooldown > 0 ? 'disabled' : ''}>🎭 Théâtre<br><small>3000-6000€</small><br><small>30s</small></button>
-            <button onclick="doConcert('arena')" ${player.popularity < 1000 || player.concertCooldown > 0 ? 'disabled' : ''}>🏟️ Arena<br><small>8000-15000€</small><br><small>30s</small></button>
-            <button onclick="doConcert('festival')" ${player.popularity < 2500 || player.concertCooldown > 0 ? 'disabled' : ''}>🎪 Festival<br><small>25000-60000€</small><br><small>30s</small></button>
+            <button onclick="doConcert('bar')" ${isPlayerBusy() ? 'disabled' : ''}>🍺 Bar Local<br><small>50-150€</small><br><small>15s</small></button>
+            <button onclick="doConcert('club')" ${player.popularity < 50 || isPlayerBusy() ? 'disabled' : ''}>🎵 Club<br><small>200-500€</small><br><small>20s</small></button>
+            <button onclick="doConcert('salle')" ${player.popularity < 200 || isPlayerBusy() ? 'disabled' : ''}>🏛️ Grande Salle<br><small>1000-2500€</small><br><small>30s</small></button>
+            <button onclick="doConcert('theatre')" ${player.popularity < 500 || isPlayerBusy() ? 'disabled' : ''}>🎭 Théâtre<br><small>3000-6000€</small><br><small>45s</small></button>
+            <button onclick="doConcert('arena')" ${player.popularity < 1000 || isPlayerBusy() ? 'disabled' : ''}>🏟️ Arena<br><small>8000-15000€</small><br><small>60s</small></button>
+            <button onclick="doConcert('festival')" ${player.popularity < 2500 || isPlayerBusy() ? 'disabled' : ''}>🎪 Festival<br><small>25000-60000€</small><br><small>90s</small></button>
         </div>
         <div id="concertResult"></div>`;
 }
 
 // Exécution d'un concert
 function doConcert(type) {
-    if (player.concertCooldown > 0) return;
+    if (isPlayerBusy()) {
+        alert('Tu es déjà occupé ! Termine ton activité en cours avant de faire un concert.');
+        return;
+    }
     
     const avgSkill = (player.skills.technique + player.skills.scene + player.skills.composition + player.skills.charisme) / 4;
     const equipBonus = getTotalEquipmentBonus();
     const venue = venues[type];
     
-    player.concertCooldown = 30;
+    player.concertCooldown = venue.cooldown;
     
     const skillMultiplier = (avgSkill + equipBonus) / 100;
     const successThreshold = venue.difficulty;
@@ -90,10 +94,10 @@ function doConcert(type) {
             <p><strong>Lieu:</strong> ${venue.name}</p>
             <p><strong>Performance:</strong> ${Math.floor(quality * 100)}%</p>
             <p class="positive"><strong>💰 Gains:</strong> +${revenue} €</p>
-            <p class="positive"><strong>💥 Nouveaux fans:</strong> +${newFans}</p>
+            <p class="positive"><strong>👥 Nouveaux fans:</strong> +${newFans}</p>
             <p class="negative"><strong>❤️ Santé:</strong> -${healthCost}%</p>
             ${!success ? '<p class="negative"><strong>⭐ Popularité:</strong> Baisse !</p>' : ''}
-            <p style="color: #ffa500; margin-top: 10px;">⏳ Prochain concert dans 30 secondes</p>
+            <p style="color: #ffa500; margin-top: 10px;">⏳ Prochain concert dans ${venue.cooldown} secondes</p>
         </div>`;
     
     updateDisplay();

@@ -1,9 +1,11 @@
 // Affichage de la vue style de vie
 function showLifestyleView(content) {
+    const activityMsg = getCurrentActivityMessage();
+    
     content.innerHTML = `
         <h2 style="color: #ff0000; margin-bottom: 20px;">💊 Style de vie Rock'n'Roll</h2>
-        ${player.restCooldown > 0 ? `<div style="background: rgba(0, 139, 139, 0.3); border: 2px solid #00ffff; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #00ffff;">
-            😴 Repos en cours... ${player.restCooldown}s restantes
+        ${activityMsg ? `<div style="background: rgba(255, 165, 0, 0.3); border: 2px solid #ffa500; padding: 15px; margin-bottom: 20px; border-radius: 5px; color: #ffa500;">
+            ${activityMsg}
         </div>` : ''}
         <div style="background: rgba(255, 0, 0, 0.2); border: 2px solid #ff0000; padding: 20px; margin-bottom: 20px; border-radius: 5px;">
             <h3 style="color: #ff0000; margin-bottom: 15px;">⚠️ ATTENTION</h3>
@@ -12,28 +14,28 @@ function showLifestyleView(content) {
             ${player.daysWithoutDrugs > 0 ? `<p style="color: #00ff00;">Jours sans drogue: ${player.daysWithoutDrugs}</p>` : ''}
         </div>
         <div class="action-grid">
-            <button onclick="takeDrug('weed')" style="background: linear-gradient(135deg, #2d5016 0%, #4a7c29 100%);">
+            <button onclick="takeDrug('weed')" ${isPlayerBusy() ? 'disabled' : ''} style="background: linear-gradient(135deg, #2d5016 0%, #4a7c29 100%);">
                 🌿 Cannabis<br>
                 <small>+10 Charisme temporaire</small><br>
                 <small>+5% Addiction</small><br>
                 <small>-5% Santé</small><br>
                 <small>500 €</small>
             </button>
-            <button onclick="takeDrug('cocaine')" style="background: linear-gradient(135deg, #444 0%, #888 100%);">
+            <button onclick="takeDrug('cocaine')" ${isPlayerBusy() ? 'disabled' : ''} style="background: linear-gradient(135deg, #444 0%, #888 100%);">
                 ❄️ Cocaïne<br>
                 <small>+20 Scène temporaire</small><br>
                 <small>+15% Addiction</small><br>
                 <small>-15% Santé</small><br>
                 <small>2000 €</small>
             </button>
-            <button onclick="takeDrug('heroin')" style="background: linear-gradient(135deg, #2d1b1b 0%, #4a2c2c 100%);">
+            <button onclick="takeDrug('heroin')" ${isPlayerBusy() ? 'disabled' : ''} style="background: linear-gradient(135deg, #2d1b1b 0%, #4a2c2c 100%);">
                 💉 Héroïne<br>
                 <small>+30 Technique temporaire</small><br>
                 <small>+30% Addiction</small><br>
                 <small>-25% Santé</small><br>
                 <small>5000 €</small>
             </button>
-            <button onclick="goRehab()" style="background: linear-gradient(135deg, #0a5c8b 0%, #00aaff 100%);">
+            <button onclick="goRehab()" ${isPlayerBusy() ? 'disabled' : ''} style="background: linear-gradient(135deg, #0a5c8b 0%, #00aaff 100%);">
                 🏥 Cure de Désintox<br>
                 <small>-50% Addiction</small><br>
                 <small>+20% Santé</small><br>
@@ -44,18 +46,19 @@ function showLifestyleView(content) {
         <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 5px; margin-top: 20px;">
             <h3 style="color: #ff6b6b; margin-bottom: 10px;">Autres activités</h3>
             <div class="action-grid">
-                <button onclick="rest()" ${player.restCooldown > 0 ? 'disabled' : ''} style="background: linear-gradient(135deg, #0a3d5c 0%, #0077bb 100%);">
+                <button onclick="rest()" ${isPlayerBusy() ? 'disabled' : ''} style="background: linear-gradient(135deg, #0a3d5c 0%, #0077bb 100%);">
                     😴 Se Reposer<br>
                     <small>+10% Santé</small><br>
                     <small>Repos 15s</small><br>
                     <small>Gratuit</small>
                 </button>
-                <button onclick="party()" style="background: linear-gradient(135deg, #5c0a5c 0%, #9900ff 100%);">
+                <button onclick="party()" ${isPlayerBusy() ? 'disabled' : ''} style="background: linear-gradient(135deg, #5c0a5c 0%, #9900ff 100%);">
                     🎉 Faire la Fête<br>
                     <small>+50 Fans</small><br>
                     <small>+5% Addiction</small><br>
                     <small>-10% Santé</small><br>
-                    <small>1000 €</small>
+                    <small>1000 €</small><br>
+                    <small>30s cooldown</small>
                 </button>
             </div>
         </div>
@@ -65,6 +68,11 @@ function showLifestyleView(content) {
 
 // Prendre de la drogue
 function takeDrug(type) {
+    if (isPlayerBusy()) {
+        alert('Tu es déjà occupé ! Termine ton activité en cours.');
+        return;
+    }
+    
     const drug = drugs[type];
     if (player.money < drug.cost) {
         alert('Pas assez d\'argent !');
@@ -91,20 +99,20 @@ function takeDrug(type) {
 
 // Cure de désintoxication
 function goRehab() {
-    if (player.money < 10000) {
-        alert('Pas assez d\'argent pour la cure !');
+    if (isPlayerBusy()) {
+        alert('Tu es déjà occupé ! Termine ton activité en cours avant de faire une cure.');
         return;
     }
-    if (player.concertCooldown > 0 || player.albumCooldown > 0) {
-        alert('Tu ne peux pas faire de cure pendant une activité !');
+    
+    if (player.money < 10000) {
+        alert('Pas assez d\'argent pour la cure !');
         return;
     }
     
     player.money -= 10000;
     player.addiction = Math.max(0, player.addiction - 50);
     player.health = Math.min(100, player.health + 20);
-    player.concertCooldown = 120;
-    player.albumCooldown = 120;
+    player.restCooldown = 120;
     
     document.getElementById('lifestyleResult').innerHTML = `
         <div style="background: rgba(0, 139, 139, 0.3); border: 2px solid #00ffff; padding: 15px; margin-top: 20px; border-radius: 5px;">
@@ -121,8 +129,8 @@ function goRehab() {
 
 // Se reposer
 function rest() {
-    if (player.restCooldown > 0) {
-        alert('Tu te reposes déjà !');
+    if (isPlayerBusy()) {
+        alert('Tu es déjà occupé ! Termine ton activité en cours.');
         return;
     }
     
@@ -143,6 +151,11 @@ function rest() {
 
 // Faire la fête
 function party() {
+    if (isPlayerBusy()) {
+        alert('Tu es déjà occupé ! Termine ton activité en cours.');
+        return;
+    }
+    
     if (player.money < 1000) {
         alert('Pas assez d\'argent !');
         return;
@@ -153,6 +166,7 @@ function party() {
     player.popularity += 5;
     player.health = Math.max(0, player.health - 10);
     player.addiction = Math.min(100, player.addiction + 5);
+    player.partyCooldown = 30;
     
     document.getElementById('lifestyleResult').innerHTML = `
         <div style="background: rgba(153, 0, 255, 0.3); border: 2px solid #9900ff; padding: 15px; margin-top: 20px; border-radius: 5px;">
@@ -161,6 +175,7 @@ function party() {
             <p class="positive">+5 Popularité</p>
             <p class="negative">-10% Santé</p>
             <p class="negative">+5% Addiction</p>
+            <p style="color: #ffa500;">⏳ Prochaine fête dans 30 secondes</p>
         </div>
     `;
     
