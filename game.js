@@ -7,6 +7,7 @@ function startGame() {
     player.name = name;
     player.instrument = instrument;
     player.isDead = false;
+    player.money = 800; // Plus généreux au départ
     
     // Code secret : stats infinies
     if (name === 'Konami Code') {
@@ -19,11 +20,15 @@ function startGame() {
     updateDisplay();
     showView('concert');
     
+    // Toast de bienvenue
+    showToast(`🎸 Bienvenue ${name} ! Lance-toi avec un concert au Bar Local pour commencer ta carrière !`, 5000);
+    
     setInterval(() => {
         gameTime++;
         if (gameTime % 30 === 0) passTime();
         updateCooldowns();
         updateAlbums();
+        if (gameTime % 5 === 0) checkAchievements();
     }, 1000);
 }
 
@@ -40,34 +45,34 @@ function passTime() {
     
     // Gestion de l'addiction
     if (player.addiction > 0) {
-        player.health -= player.addiction / 15;
+        player.health -= player.addiction / 18; // Un peu plus lent
         player.daysWithoutDrugs = 0;
-        if (Math.random() < 0.1) player.addiction = Math.max(0, player.addiction - 0.5);
+        if (Math.random() < 0.12) player.addiction = Math.max(0, player.addiction - 0.5);
     } else {
-        // 0.15 an = environ 55 jours, donc on incrémente proportionnellement
         player.daysWithoutDrugs += 55;
-        if (player.health < 100) player.health += 0.5;
+        if (player.health < 100) player.health += 0.8; // Récup un peu plus rapide
     }
     
-    // Coûts de maintenance
+    // Coûts de maintenance (toutes les 90s) — réduits de 20%
     if (gameTime % 90 === 0 && hasAnyEquipment()) {
         let maintenanceCost = calculateMaintenance();
         player.money -= maintenanceCost;
         if (player.money < 0) {
             player.health -= 5;
+            showToast('⚠️ Tu n\'as plus assez d\'argent pour la maintenance ! Santé -5%', 3000);
         }
     }
     
-    // Perte de popularité
-    if (gameTime % 120 === 0 && player.popularity > 0) {
-        player.popularity = Math.max(0, player.popularity - Math.floor(player.popularity * 0.02));
+    // Perte de popularité — plus lente (toutes les 180s au lieu de 120s, et seulement 1%)
+    if (gameTime % 180 === 0 && player.popularity > 0) {
+        player.popularity = Math.max(0, player.popularity - Math.floor(player.popularity * 0.01));
     }
     
     // Effets du vieillissement
-    if (player.age > 50 && Math.random() < 0.02) player.health -= Math.random() * 5;
-    if (player.age > 60 && Math.random() < 0.05) player.health -= Math.random() * 10;
-    if (player.age > 70 && Math.random() < 0.08) player.health -= Math.random() * 15;
-    if (player.age > 80) player.health -= 0.5;
+    if (player.age > 50 && Math.random() < 0.02) player.health -= Math.random() * 4;
+    if (player.age > 60 && Math.random() < 0.04) player.health -= Math.random() * 8;
+    if (player.age > 70 && Math.random() < 0.07) player.health -= Math.random() * 12;
+    if (player.age > 80) player.health -= 0.4;
     
     player.health = Math.max(0, player.health);
     
@@ -85,34 +90,64 @@ function updateCooldowns() {
             player.trainingCooldowns[skill]--;
         }
     }
-    if (player.concertCooldown > 0) {
-        player.concertCooldown--;
-    }
-    if (player.albumCooldown > 0) {
-        player.albumCooldown--;
-    }
-    if (player.restCooldown > 0) {
-        player.restCooldown--;
-    }
-    if (player.partyCooldown > 0) {
-        player.partyCooldown--;
-    }
+    if (player.concertCooldown > 0) player.concertCooldown--;
+    if (player.albumCooldown > 0) player.albumCooldown--;
+    if (player.restCooldown > 0) player.restCooldown--;
+    if (player.partyCooldown > 0) player.partyCooldown--;
+
     if (currentView === 'training' || currentView === 'concert' || currentView === 'albums' || currentView === 'lifestyle') {
         showView(currentView);
     }
+    // Mise à jour du revenu passif dans le header
+    updatePassiveIncomeDisplay();
 }
 
-// Mise à jour des revenus des albums
+// Mise à jour des revenus des albums (toutes les 30s au lieu de 60s, divisé par 2)
 function updateAlbums() {
+    if (gameTime % 30 === 0) {
+        let totalRevenue = 0;
+        let totalFans = 0;
+        player.albums.forEach(album => {
+            if (album.isPopular && album.albumTypeKey !== 'demo') {
+                const revenue = Math.floor(album.revenuePerMinute / 2);
+                const newFans = Math.floor(album.fansPerMinute / 2);
+                totalRevenue += revenue;
+                totalFans += newFans;
+            }
+        });
+        if (totalRevenue > 0) {
+            player.money += totalRevenue;
+            player.fans += totalFans;
+            // Toast occasionnel
+            if (gameTime % 120 === 0 && totalRevenue > 0) {
+                showToast(`💿 Revenus passifs : +${totalRevenue} € et +${totalFans} fans !`, 2500);
+            }
+        }
+    }
+}
+
+// Calcul du revenu passif par minute
+function getPassiveIncomePerMinute() {
+    let total = 0;
     player.albums.forEach(album => {
-        // Revenus par minute pour les albums populaires (sauf démos)
-        if (album.isPopular && album.albumTypeKey !== 'demo' && gameTime % 60 === 0) {
-            const revenue = album.revenuePerMinute;
-            const newFans = album.fansPerMinute;
-            player.money += revenue;
-            player.fans += newFans;
+        if (album.isPopular && album.albumTypeKey !== 'demo') {
+            total += album.revenuePerMinute;
         }
     });
+    return total;
+}
+
+// Affichage du revenu passif dans le header
+function updatePassiveIncomeDisplay() {
+    const el = document.getElementById('passiveIncomeDisplay');
+    if (!el) return;
+    const passive = getPassiveIncomePerMinute();
+    if (passive > 0) {
+        el.style.display = 'inline';
+        el.textContent = `📀 ${passive.toLocaleString()} €/min`;
+    } else {
+        el.style.display = 'none';
+    }
 }
 
 // Vérifier si le joueur est occupé
@@ -130,18 +165,10 @@ function hasTrainingCooldown() {
 
 // Obtenir le message d'activité en cours
 function getCurrentActivityMessage() {
-    if (player.concertCooldown > 0) {
-        return `⏳ Concert en cours... ${player.concertCooldown}s restantes`;
-    }
-    if (player.albumCooldown > 0) {
-        return `⏳ Enregistrement en cours... ${player.albumCooldown}s restantes`;
-    }
-    if (player.restCooldown > 0) {
-        return `⏳ Repos en cours... ${player.restCooldown}s restantes`;
-    }
-    if (player.partyCooldown > 0) {
-        return `⏳ Fête en cours... ${player.partyCooldown}s restantes`;
-    }
+    if (player.concertCooldown > 0) return `⏳ Concert en cours... ${player.concertCooldown}s restantes`;
+    if (player.albumCooldown > 0) return `⏳ Enregistrement en cours... ${player.albumCooldown}s restantes`;
+    if (player.restCooldown > 0) return `⏳ Repos en cours... ${player.restCooldown}s restantes`;
+    if (player.partyCooldown > 0) return `⏳ Fête en cours... ${player.partyCooldown}s restantes`;
     for (let skill in player.trainingCooldowns) {
         if (player.trainingCooldowns[skill] > 0) {
             const skillName = skills.find(s => s.key === skill)?.name || skill;
@@ -149,6 +176,55 @@ function getCurrentActivityMessage() {
         }
     }
     return null;
+}
+
+// =====================
+// SYSTÈME D'ACHIEVEMENTS
+// =====================
+function checkAchievements() {
+    if (!player.unlockedAchievements) player.unlockedAchievements = [];
+    
+    achievements.forEach(ach => {
+        if (!player.unlockedAchievements.includes(ach.id) && ach.check()) {
+            player.unlockedAchievements.push(ach.id);
+            // Appliquer la récompense
+            if (ach.reward.money) player.money += ach.reward.money;
+            if (ach.reward.fans) player.fans += ach.reward.fans;
+            if (ach.reward.popularity) player.popularity += ach.reward.popularity;
+            if (ach.reward.health) player.health = Math.min(100, player.health + ach.reward.health);
+            
+            // Construire le message de récompense
+            let rewardText = [];
+            if (ach.reward.money) rewardText.push(`+${ach.reward.money.toLocaleString()} €`);
+            if (ach.reward.fans) rewardText.push(`+${ach.reward.fans.toLocaleString()} fans`);
+            if (ach.reward.popularity) rewardText.push(`+${ach.reward.popularity} popularité`);
+            if (ach.reward.health) rewardText.push(`+${ach.reward.health}% santé`);
+            
+            showToast(`${ach.icon} ACHIEVEMENT : "${ach.name}" — ${ach.desc} ! Récompense : ${rewardText.join(', ')}`, 5000);
+            updateDisplay();
+        }
+    });
+}
+
+// =====================
+// SYSTÈME DE TOAST
+// =====================
+function showToast(message, duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = message;
+    container.appendChild(toast);
+    
+    // Animation entrée
+    setTimeout(() => toast.classList.add('toast-show'), 10);
+    // Sortie
+    setTimeout(() => {
+        toast.classList.remove('toast-show');
+        setTimeout(() => toast.remove(), 400);
+    }, duration);
 }
 
 // Fin de partie
@@ -176,6 +252,7 @@ function gameOver() {
         concerts: player.concertsPlayed,
         albums: player.albums.length,
         group: player.group?.name || 'Solo',
+        achievements: (player.unlockedAchievements || []).length,
         cause: cause,
         date: new Date().toLocaleString('fr-FR')
     };
@@ -196,6 +273,7 @@ function gameOver() {
             <p>🎵 Concerts joués: ${player.concertsPlayed}</p>
             <p>💿 Albums sortis: ${player.albums.length}</p>
             <p>⭐ Popularité maximale: ${player.popularity}</p>
+            <p>🏆 Achievements: ${(player.unlockedAchievements || []).length}/${achievements.length}</p>
             ${player.group ? `<p>🎸 Dernier groupe: ${player.group.name}</p>` : ''}
         </div>`;
     

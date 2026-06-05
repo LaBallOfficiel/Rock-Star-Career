@@ -5,7 +5,7 @@ let player = {
     age: 18, 
     health: 100, 
     addiction: 0,
-    money: 300, 
+    money: 800, 
     fans: 0, 
     popularity: 0, 
     concertsPlayed: 0, 
@@ -21,7 +21,9 @@ let player = {
     partyCooldown: 0,
     isDead: false,
     infiniteMoney: false,
-    infiniteStats: false
+    infiniteStats: false,
+    unlockedAchievements: [],
+    festivalPlayed: 0
 };
 
 // Variables globales
@@ -36,12 +38,16 @@ function updateDisplay() {
     document.getElementById('displayGroup').textContent = player.group ? `🎸 Groupe: ${player.group.name}` : '🎤 Solo';
     document.getElementById('displayAge').textContent = Math.floor(player.age);
     document.getElementById('displayAddiction').textContent = Math.floor(player.addiction);
+    document.getElementById('displayMoney').textContent = player.money.toLocaleString();
+    document.getElementById('displayFans').textContent = player.fans.toLocaleString();
     
     const healthBar = document.getElementById('healthBar');
     const healthPercent = Math.max(0, Math.min(100, player.health));
     healthBar.style.width = healthPercent + '%';
     healthBar.textContent = Math.floor(player.health) + '%';
     healthBar.className = 'health-fill ' + (healthPercent > 60 ? 'health-good' : healthPercent > 30 ? 'health-medium' : 'health-bad');
+    
+    updatePassiveIncomeDisplay();
 }
 
 function getTotalEquipmentBonus() {
@@ -63,9 +69,9 @@ function hasAnyEquipment() {
 function calculateMaintenance() {
     let cost = 0;
     for (let eq in player.equipment) {
-        if (player.equipment[eq] > 0) cost += player.equipment[eq] * 50;
+        if (player.equipment[eq] > 0) cost += player.equipment[eq] * 40; // 40 au lieu de 50
     }
-    if (player.group) cost += 200;
+    if (player.group) cost += 150; // 150 au lieu de 200
     return cost;
 }
 
@@ -81,7 +87,6 @@ function loadGame() {
     if (saved) {
         const savedPlayer = JSON.parse(saved);
         
-        // Vérifier si le joueur sauvegardé est mort
         if (savedPlayer.isDead || savedPlayer.health <= 0 || (savedPlayer.money < 0 && !savedPlayer.infiniteStats)) {
             localStorage.removeItem('currentGame');
             return false;
@@ -92,49 +97,27 @@ function loadGame() {
             player = savedPlayer;
             player.isDead = false;
             
-            // Migration des données : ajouter les propriétés manquantes
-            if (player.infiniteStats === undefined) {
-                player.infiniteStats = false;
-            }
-            if (player.infiniteMoney === undefined) {
-                player.infiniteMoney = false;
-            }
-            if (player.daysWithoutDrugs === undefined) {
-                player.daysWithoutDrugs = 0;
-            }
-            if (player.albums === undefined) {
-                player.albums = [];
-            }
-            if (player.albumCooldown === undefined) {
-                player.albumCooldown = 0;
-            }
-            if (player.restCooldown === undefined) {
-                player.restCooldown = 0;
-            }
-            if (player.partyCooldown === undefined) {
-                player.partyCooldown = 0;
-            }
-            if (player.equipment.studio === undefined) {
-                player.equipment.studio = 0;
-            }
+            // Migration des données
+            if (player.infiniteStats === undefined) player.infiniteStats = false;
+            if (player.infiniteMoney === undefined) player.infiniteMoney = false;
+            if (player.daysWithoutDrugs === undefined) player.daysWithoutDrugs = 0;
+            if (player.albums === undefined) player.albums = [];
+            if (player.albumCooldown === undefined) player.albumCooldown = 0;
+            if (player.restCooldown === undefined) player.restCooldown = 0;
+            if (player.partyCooldown === undefined) player.partyCooldown = 0;
+            if (player.equipment.studio === undefined) player.equipment.studio = 0;
+            if (player.unlockedAchievements === undefined) player.unlockedAchievements = [];
+            if (player.festivalPlayed === undefined) player.festivalPlayed = 0;
             
-            // Migration des albums : ajouter les nouvelles propriétés
             if (player.albums && player.albums.length > 0) {
                 player.albums = player.albums.map(album => {
-                    if (album.albumTypeKey === undefined) {
-                        album.albumTypeKey = 'album';
-                    }
-                    if (album.revenuePerMinute === undefined) {
-                        album.revenuePerMinute = 0;
-                    }
-                    if (album.fansPerMinute === undefined) {
-                        album.fansPerMinute = 0;
-                    }
+                    if (album.albumTypeKey === undefined) album.albumTypeKey = 'album';
+                    if (album.revenuePerMinute === undefined) album.revenuePerMinute = 0;
+                    if (album.fansPerMinute === undefined) album.fansPerMinute = 0;
                     return album;
                 });
             }
             
-            // Sauvegarder les données migrées
             saveGame();
             
             document.getElementById('creationScreen').classList.remove('active');
@@ -147,6 +130,7 @@ function loadGame() {
                 if (gameTime % 30 === 0) passTime();
                 updateCooldowns();
                 updateAlbums();
+                if (gameTime % 5 === 0) checkAchievements();
             }, 1000);
             return true;
         }
