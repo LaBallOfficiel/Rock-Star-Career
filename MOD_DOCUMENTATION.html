@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Star Career — Guide du Modding</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a0505 100%);
+    color: #e0e0e0;
+    line-height: 1.7;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .page { max-width: 900px; margin: 0 auto; }
+
+  h1 {
+    color: #ff0000;
+    text-shadow: 0 0 20px rgba(255,0,0,0.6);
+    font-size: 2.2em;
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: 3px;
+  }
+  .subtitle {
+    text-align: center; color: #888; margin-bottom: 40px; font-size: 0.9em;
+  }
+
+  h2 {
+    color: #ff4444;
+    font-size: 1.3em;
+    margin: 40px 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #3a0000;
+    letter-spacing: 1px;
+  }
+  h3 {
+    color: #ff9999;
+    margin: 24px 0 8px 0;
+    font-size: 1.05em;
+  }
+
+  p { color: #ccc; margin-bottom: 10px; }
+  ul { color: #ccc; margin: 8px 0 14px 20px; }
+  li { margin-bottom: 4px; }
+
+  code {
+    background: #1a0a0a;
+    border: 1px solid #3a0000;
+    color: #ffa500;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+  }
+
+  pre {
+    background: #0d0d0d;
+    border: 2px solid #3a0000;
+    border-left: 4px solid #cc0000;
+    color: #e0e0e0;
+    padding: 18px 20px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 12px 0 20px 0;
+    font-size: 0.88em;
+    line-height: 1.6;
+  }
+  .kw  { color: #ff6b6b; }   /* keywords */
+  .fn  { color: #ffd700; }   /* function names */
+  .str { color: #88dd88; }   /* strings */
+  .num { color: #88aaff; }   /* numbers */
+  .cm  { color: #555; font-style: italic; } /* comments */
+
+  .api-block {
+    background: rgba(139,0,0,0.12);
+    border: 1px solid #5a0000;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  .api-name {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1em;
+    font-family: 'Courier New', monospace;
+  }
+  .api-desc { color: #aaa; font-size: 0.9em; margin-top: 4px; }
+  .api-params { margin-top: 10px; }
+  .param-row { display: flex; gap: 12px; margin-bottom: 4px; font-size: 0.85em; }
+  .param-name { color: #ffa500; min-width: 160px; font-family: monospace; }
+  .param-type { color: #88aaff; min-width: 80px; }
+  .param-desc { color: #888; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: bold;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-new   { background: #003a00; color: #00cc00; border: 1px solid #00aa00; }
+  .badge-patch { background: #3a2000; color: #ffa500; border: 1px solid #cc7700; }
+  .badge-hook  { background: #001a3a; color: #4499ff; border: 1px solid #2266cc; }
+
+  .tip {
+    background: rgba(0,80,0,0.2);
+    border-left: 3px solid #00aa00;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    color: #aaffaa;
+    font-size: 0.9em;
+  }
+  .warn {
+    background: rgba(180,80,0,0.2);
+    border-left: 3px solid #ff8800;
+    padding: 12px 16px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    color: #ffcc88;
+    font-size: 0.9em;
+  }
+
+  .toc { 
+    background: rgba(0,0,0,0.4); 
+    border: 1px solid #3a0000; 
+    border-radius: 8px; 
+    padding: 20px 24px; 
+    margin-bottom: 40px;
+  }
+  .toc h3 { color: #ff6b6b; margin: 0 0 12px 0; }
+  .toc a { color: #ff9999; text-decoration: none; font-size: 0.9em; display: block; padding: 2px 0; }
+  .toc a:hover { color: #ff0000; }
+  .toc .toc-sub { margin-left: 20px; color: #888; font-size: 0.85em; }
+
+  footer { text-align: center; color: #444; margin-top: 60px; font-size: 0.8em; }
+  hr { border: none; border-top: 1px solid #2a0000; margin: 30px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>🎸 ROCK STAR CAREER</h1>
+<div class="subtitle">Guide officiel du Modding — API RSC_MOD v1.0.0</div>
+
+<!-- TABLE DES MATIÈRES -->
+<div class="toc">
+  <h3>📋 Table des matières</h3>
+  <a href="#intro">1. Introduction</a>
+  <a href="#structure">2. Structure d'un mod</a>
+  <a href="#player">3. API — Joueur</a>
+  <a href="#groups">4. API — Groupes</a>
+  <a href="#venues">5. API — Lieux de concert</a>
+  <a href="#albums">6. API — Albums</a>
+  <a href="#equipment">7. API — Équipement</a>
+  <a href="#achievements">8. API — Achievements</a>
+  <a href="#events">9. API — Événements de concert</a>
+  <a href="#social">10. API — Réseaux sociaux</a>
+  <a href="#hooks">11. API — Hooks de jeu</a>
+  <a href="#examples">12. Exemples complets</a>
+  <a href="#player-object">13. Référence : objet player</a>
+</div>
+
+<!-- 1. INTRODUCTION -->
+<h2 id="intro">1. Introduction</h2>
+<p>
+  Le <strong>Mod Loader</strong> de Rock Star Career te permet d'injecter du code JavaScript pendant une partie
+  pour ajouter des contenus, modifier les valeurs du jeu, ou créer des mécaniques entièrement nouvelles.
+</p>
+<p>
+  Tout se fait via l'objet global <code>RSC_MOD</code> exposé par le jeu.
+  Tes mods sont des fichiers <code>.js</code> simples que tu importes depuis le menu <strong>🔧 Mods</strong> en jeu.
+</p>
+<div class="tip">
+  💡 Tu peux aussi coller et exécuter du code directement dans l'éditeur intégré au menu Mods, sans créer de fichier.
+</div>
+<div class="warn">
+  ⚠️ Les mods s'exécutent dans le contexte de la page. Un mod mal écrit peut crasher ta partie. Pense à sauvegarder avant d'en charger un nouveau.
+</div>
+
+<!-- 2. STRUCTURE -->
+<h2 id="structure">2. Structure d'un mod</h2>
+<p>Un mod minimal ressemble à ça :</p>
+<pre><span class="cm">// monMod.js</span>
+<span class="cm">// Toujours commencer par _register pour apparaître dans la liste des mods actifs.</span>
+
+RSC_MOD.<span class="fn">_register</span>({
+  name: <span class="str">'Mon Super Mod'</span>,
+  version: <span class="str">'1.0.0'</span>,
+  author: <span class="str">'TonPseudo'</span>
+});
+
+<span class="cm">// Ensuite, tes modifications :</span>
+RSC_MOD.<span class="fn">addGroup</span>({
+  name: <span class="str">'Les Immortels'</span>,
+  minPop: <span class="num">5000</span>,
+  bonus: <span class="num">10</span>,
+  members: <span class="num">8</span>
+});</pre>
+
+<p>Tu peux encapsuler plusieurs appels dans un <code>IIFE</code> pour éviter de polluer le scope global :</p>
+<pre>(<span class="kw">function</span>() {
+  RSC_MOD.<span class="fn">_register</span>({ name: <span class="str">'Mod Propre'</span>, version: <span class="str">'1.0'</span> });
+
+  <span class="cm">// tout ton code ici...</span>
+})();</pre>
+
+<!-- 3. JOUEUR -->
+<h2 id="player">3. API — Joueur</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.setPlayerStat(stat, value)</div>
+  <div class="api-desc">Modifie directement une statistique du joueur.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">stat</span><span class="param-type">string</span><span class="param-desc">'money' | 'fans' | 'popularity' | 'health' | 'addiction' | 'age'</span></div>
+    <div class="param-row"><span class="param-name">value</span><span class="param-type">number</span><span class="param-desc">nouvelle valeur</span></div>
+  </div>
+</div>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.setSkill(skill, value)</div>
+  <div class="api-desc">Modifie une compétence du joueur (clampée entre 0 et 100).</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">skill</span><span class="param-type">string</span><span class="param-desc">'technique' | 'scene' | 'composition' | 'charisme' | 'marketing' | 'endurance'</span></div>
+    <div class="param-row"><span class="param-name">value</span><span class="param-type">number</span><span class="param-desc">0 – 100</span></div>
+  </div>
+</div>
+
+<pre>RSC_MOD.<span class="fn">setPlayerStat</span>(<span class="str">'money'</span>, <span class="num">100000</span>);
+RSC_MOD.<span class="fn">setPlayerStat</span>(<span class="str">'health'</span>, <span class="num">100</span>);
+RSC_MOD.<span class="fn">setSkill</span>(<span class="str">'technique'</span>, <span class="num">80</span>);
+RSC_MOD.<span class="fn">setSkill</span>(<span class="str">'marketing'</span>, <span class="num">75</span>);</pre>
+
+<!-- 4. GROUPES -->
+<h2 id="groups">4. API — Groupes</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addGroup(groupDef) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Ajoute un nouveau groupe dans la liste des groupes rejoignables.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">groupDef.name</span><span class="param-type">string</span><span class="param-desc">Nom du groupe (doit être unique)</span></div>
+    <div class="param-row"><span class="param-name">groupDef.minPop</span><span class="param-type">number</span><span class="param-desc">Popularité minimum requise</span></div>
+    <div class="param-row"><span class="param-name">groupDef.bonus</span><span class="param-type">number</span><span class="param-desc">Multiplicateur de gains (ex: 2 = x2)</span></div>
+    <div class="param-row"><span class="param-name">groupDef.members</span><span class="param-type">number</span><span class="param-desc">Nombre de membres (cosmétique)</span></div>
+  </div>
+</div>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.removeGroup(name)</div>
+  <div class="api-desc">Supprime un groupe existant par son nom.</div>
+</div>
+
+<pre>RSC_MOD.<span class="fn">addGroup</span>({
+  name: <span class="str">'Galactic Noise'</span>,
+  minPop: <span class="num">4000</span>,
+  bonus: <span class="num">9</span>,
+  members: <span class="num">10</span>
+});
+
+RSC_MOD.<span class="fn">removeGroup</span>(<span class="str">'Les Débutants'</span>); <span class="cm">// supprime un groupe existant</span></pre>
+
+<!-- 5. LIEUX -->
+<h2 id="venues">5. API — Lieux de concert</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addVenue(id, venueDef, minPop) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Ajoute ou remplace un lieu de concert.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">id</span><span class="param-type">string</span><span class="param-desc">Identifiant unique (ex: 'stade'). S'il existe déjà, le lieu est remplacé.</span></div>
+    <div class="param-row"><span class="param-name">venueDef.name</span><span class="param-type">string</span><span class="param-desc">Nom affiché</span></div>
+    <div class="param-row"><span class="param-name">venueDef.revenue</span><span class="param-type">number</span><span class="param-desc">Revenu de base (€)</span></div>
+    <div class="param-row"><span class="param-name">venueDef.fans</span><span class="param-type">number</span><span class="param-desc">Fans de base gagnés</span></div>
+    <div class="param-row"><span class="param-name">venueDef.difficulty</span><span class="param-type">number</span><span class="param-desc">0.0 (facile) à 1.0 (impossible) — seuil de skill requis</span></div>
+    <div class="param-row"><span class="param-name">venueDef.cooldown</span><span class="param-type">number</span><span class="param-desc">Cooldown en secondes</span></div>
+    <div class="param-row"><span class="param-name">minPop</span><span class="param-type">number</span><span class="param-desc">Popularité requise pour débloquer le lieu</span></div>
+  </div>
+</div>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.patchVenue(id, patch) <span class="badge badge-patch">PATCH</span></div>
+  <div class="api-desc">Modifie partiellement un lieu existant. Passe seulement les champs à changer.</div>
+</div>
+
+<pre><span class="cm">// Nouveau lieu ultra-difficile</span>
+RSC_MOD.<span class="fn">addVenue</span>(<span class="str">'stade'</span>, {
+  name: <span class="str">'Stade Mondial'</span>,
+  revenue: <span class="num">200000</span>,
+  fans: <span class="num">30000</span>,
+  difficulty: <span class="num">0.95</span>,
+  cooldown: <span class="num">120</span>
+}, <span class="num">5000</span>);
+
+<span class="cm">// Rendre le bar plus généreux</span>
+RSC_MOD.<span class="fn">patchVenue</span>(<span class="str">'bar'</span>, { revenue: <span class="num">300</span>, cooldown: <span class="num">8</span> });</pre>
+
+<!-- 6. ALBUMS -->
+<h2 id="albums">6. API — Albums</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addAlbumType(albumDef) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Ajoute un nouveau format d'album dans la vue Albums.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">albumDef.type</span><span class="param-type">string</span><span class="param-desc">Identifiant unique interne (ex: 'mixtape')</span></div>
+    <div class="param-row"><span class="param-name">albumDef.name</span><span class="param-type">string</span><span class="param-desc">Nom affiché (ex: 'Mixtape')</span></div>
+    <div class="param-row"><span class="param-name">albumDef.cost</span><span class="param-type">number</span><span class="param-desc">Coût en €</span></div>
+    <div class="param-row"><span class="param-name">albumDef.duration</span><span class="param-type">number</span><span class="param-desc">Cooldown d'enregistrement en secondes</span></div>
+    <div class="param-row"><span class="param-name">albumDef.minStudio</span><span class="param-type">number</span><span class="param-desc">Niveau de studio minimum (0–3)</span></div>
+    <div class="param-row"><span class="param-name">albumDef.tracks</span><span class="param-type">number</span><span class="param-desc">Nombre de titres (cosmétique)</span></div>
+  </div>
+</div>
+
+<pre>RSC_MOD.<span class="fn">addAlbumType</span>({
+  type: <span class="str">'mixtape'</span>,
+  name: <span class="str">'Mixtape Gratuite'</span>,
+  cost: <span class="num">0</span>,
+  duration: <span class="num">15</span>,
+  minStudio: <span class="num">0</span>,
+  tracks: <span class="num">7</span>
+});</pre>
+
+<div class="warn">
+  ⚠️ Le moteur de calcul de revenus des albums reconnaît les types <code>'demo'</code>, <code>'ep'</code>, <code>'album'</code>, <code>'live'</code>, <code>'double'</code>. Un type inconnu sera traité comme un <code>'demo'</code> (revenu unique, pas de passif). Pour des revenus passifs sur un type custom, utilise un hook <code>onTick</code>.
+</div>
+
+<!-- 7. ÉQUIPEMENT -->
+<h2 id="equipment">7. API — Équipement</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addEquipmentCategory(categoryId, label, items) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Crée une nouvelle catégorie complète dans la boutique.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">categoryId</span><span class="param-type">string</span><span class="param-desc">Identifiant interne (ex: 'drone')</span></div>
+    <div class="param-row"><span class="param-name">label</span><span class="param-type">string</span><span class="param-desc">Titre affiché dans la boutique</span></div>
+    <div class="param-row"><span class="param-name">items</span><span class="param-type">Array</span><span class="param-desc">Tableau de niveaux : <code>[{ level, name, cost, bonus, desc? }]</code></span></div>
+  </div>
+</div>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addEquipmentLevel(categoryId, itemDef) <span class="badge badge-patch">PATCH</span></div>
+  <div class="api-desc">Ajoute un niveau supplémentaire à une catégorie existante.</div>
+</div>
+
+<pre><span class="cm">// Nouvelle catégorie : Drones de scène</span>
+RSC_MOD.<span class="fn">addEquipmentCategory</span>(<span class="str">'drone'</span>, <span class="str">'Drones de Scène'</span>, [
+  { level: <span class="num">1</span>, name: <span class="str">'Mini Drone'</span>,  cost: <span class="num">3000</span>,  bonus: <span class="num">12</span>, desc: <span class="str">'Effets visuels basiques'</span> },
+  { level: <span class="num">2</span>, name: <span class="str">'Essaim Drone'</span>, cost: <span class="num">15000</span>, bonus: <span class="num">35</span>, desc: <span class="str">'Chorégraphie lumineuse'</span> },
+  { level: <span class="num">3</span>, name: <span class="str">'Méga Flotte'</span>,  cost: <span class="num">80000</span>, bonus: <span class="num">70</span>, desc: <span class="str">'Spectacle unique au monde'</span> }
+]);
+
+<span class="cm">// Ajouter un niveau 6 à l'instrument</span>
+RSC_MOD.<span class="fn">addEquipmentLevel</span>(<span class="str">'instrument'</span>, {
+  name: <span class="str">'Guitare Sacrée'</span>,
+  cost: <span class="num">500000</span>,
+  bonus: <span class="num">120</span>,
+  desc: <span class="str">'Forgée dans les flammes du rock'</span>
+});</pre>
+
+<!-- 8. ACHIEVEMENTS -->
+<h2 id="achievements">8. API — Achievements</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addAchievement(achDef) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Ajoute un achievement personnalisé vérifié automatiquement toutes les 5 secondes.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">achDef.id</span><span class="param-type">string</span><span class="param-desc">Identifiant unique (ex: 'my_mod_ach1')</span></div>
+    <div class="param-row"><span class="param-name">achDef.name</span><span class="param-type">string</span><span class="param-desc">Nom affiché</span></div>
+    <div class="param-row"><span class="param-name">achDef.desc</span><span class="param-type">string</span><span class="param-desc">Description</span></div>
+    <div class="param-row"><span class="param-name">achDef.icon</span><span class="param-type">string</span><span class="param-desc">Emoji ou texte court</span></div>
+    <div class="param-row"><span class="param-name">achDef.check</span><span class="param-type">Function</span><span class="param-desc">Fonction sans argument retournant <code>true</code> quand débloqué</span></div>
+    <div class="param-row"><span class="param-name">achDef.reward</span><span class="param-type">Object</span><span class="param-desc"><code>{ money?, fans?, popularity?, health? }</code></span></div>
+  </div>
+</div>
+
+<pre>RSC_MOD.<span class="fn">addAchievement</span>({
+  id: <span class="str">'mod_rich'</span>,
+  name: <span class="str">'Méga Riche'</span>,
+  desc: <span class="str">'Accumule 1 000 000 €'</span>,
+  icon: <span class="str">'🤑'</span>,
+  check: () => player.money >= <span class="num">1000000</span>,
+  reward: { fans: <span class="num">10000</span>, popularity: <span class="num">500</span> }
+});</pre>
+
+<!-- 9. ÉVÉNEMENTS -->
+<h2 id="events">9. API — Événements de concert</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addConcertEvent(eventDef) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Ajoute un événement aléatoire qui peut se déclencher pendant un concert.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">eventDef.chance</span><span class="param-type">number</span><span class="param-desc">Probabilité 0.0–1.0 (ex: 0.05 = 5%)</span></div>
+    <div class="param-row"><span class="param-name">eventDef.type</span><span class="param-type">string</span><span class="param-desc">'good' | 'bad' | 'neutral'  (affecte la couleur du message)</span></div>
+    <div class="param-row"><span class="param-name">eventDef.name</span><span class="param-type">string</span><span class="param-desc">Nom de l'événement</span></div>
+    <div class="param-row"><span class="param-name">eventDef.revenueBonus</span><span class="param-type">number</span><span class="param-desc">Multiplicateur de revenu (1.0 = inchangé)</span></div>
+    <div class="param-row"><span class="param-name">eventDef.fanBonus</span><span class="param-type">number</span><span class="param-desc">Multiplicateur de fans</span></div>
+    <div class="param-row"><span class="param-name">eventDef.msg</span><span class="param-type">string</span><span class="param-desc">Message affiché au joueur</span></div>
+  </div>
+</div>
+
+<pre>RSC_MOD.<span class="fn">addConcertEvent</span>({
+  chance: <span class="num">0.05</span>,
+  type: <span class="str">'good'</span>,
+  name: <span class="str">'Scène Envahie'</span>,
+  revenueBonus: <span class="num">1.2</span>,
+  fanBonus: <span class="num">3.0</span>,
+  msg: <span class="str">'🎉 Un fan monte sur scène avec toi ! Les fans adorent !'</span>
+});</pre>
+
+<!-- 10. RÉSEAUX SOCIAUX -->
+<h2 id="social">10. API — Réseaux sociaux</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.addSocialPlatform(platformDef) <span class="badge badge-new">NEW</span></div>
+  <div class="api-desc">Ajoute une plateforme sociale dans le menu Réseaux Sociaux.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">platformDef.id</span><span class="param-type">string</span><span class="param-desc">Identifiant unique (ex: 'twitch')</span></div>
+    <div class="param-row"><span class="param-name">platformDef.name</span><span class="param-type">string</span><span class="param-desc">Nom affiché</span></div>
+    <div class="param-row"><span class="param-name">platformDef.icon</span><span class="param-type">string</span><span class="param-desc">Emoji</span></div>
+    <div class="param-row"><span class="param-name">platformDef.minPop</span><span class="param-type">number</span><span class="param-desc">Popularité requise</span></div>
+    <div class="param-row"><span class="param-name">platformDef.fanMultiplier</span><span class="param-type">number</span><span class="param-desc">Multiplicateur de fans par post (ex: 2.5)</span></div>
+    <div class="param-row"><span class="param-name">platformDef.desc</span><span class="param-type">string</span><span class="param-desc">Courte description</span></div>
+  </div>
+</div>
+
+<pre>RSC_MOD.<span class="fn">addSocialPlatform</span>({
+  id: <span class="str">'twitch'</span>,
+  name: <span class="str">'Twitch'</span>,
+  icon: <span class="str">'🟣'</span>,
+  minPop: <span class="num">300</span>,
+  fanMultiplier: <span class="num">2.5</span>,
+  desc: <span class="str">'Lives et gaming'</span>
+});</pre>
+
+<!-- 11. HOOKS -->
+<h2 id="hooks">11. API — Hooks de jeu</h2>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.onTick(modName, fn) <span class="badge badge-hook">HOOK</span></div>
+  <div class="api-desc">Exécute une fonction à chaque seconde de jeu. Utile pour des revenus passifs custom, des malus progressifs, etc.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">modName</span><span class="param-type">string</span><span class="param-desc">Nom du mod (pour les logs console)</span></div>
+    <div class="param-row"><span class="param-name">fn(gameTime, player)</span><span class="param-type">Function</span><span class="param-desc">Callback reçoit <code>gameTime</code> (secondes) et <code>player</code></span></div>
+  </div>
+</div>
+
+<div class="api-block">
+  <div class="api-name">RSC_MOD.onConcertEnd(modName, fn) <span class="badge badge-hook">HOOK</span></div>
+  <div class="api-desc">Exécute une fonction après chaque concert.</div>
+  <div class="api-params">
+    <div class="param-row"><span class="param-name">fn(data)</span><span class="param-type">Function</span><span class="param-desc">Reçoit <code>{ type, revenue, fans, success, quality }</code></span></div>
+  </div>
+</div>
+
+<div class="tip">
+  💡 Les hooks <code>onTick</code> sont exécutés depuis <code>updateCooldowns()</code>, donc toutes les secondes. Pense à n'agir que toutes les N secondes avec <code>if (gameTime % 60 === 0)</code>.
+</div>
+
+<pre><span class="cm">// Revenus passifs custom toutes les minutes</span>
+RSC_MOD.<span class="fn">onTick</span>(<span class="str">'MonMod'</span>, (gameTime, player) => {
+  <span class="kw">if</span> (gameTime % <span class="num">60</span> === <span class="num">0</span> && player.skills.marketing >= <span class="num">80</span>) {
+    player.money += <span class="num">500</span>;
+    RSC_MOD.<span class="fn">toast</span>(<span class="str">'Marketing Passif : +500€'</span>);
+  }
+});
+
+<span class="cm">// Bonus après chaque festival réussi</span>
+RSC_MOD.<span class="fn">onConcertEnd</span>(<span class="str">'FestivalBonus'</span>, (data) => {
+  <span class="kw">if</span> (data.type === <span class="str">'festival'</span> && data.success) {
+    player.fans += <span class="num">500</span>;
+    RSC_MOD.<span class="fn">toast</span>(<span class="str">'Bonus Festival : +500 fans !'</span>);
+  }
+});</pre>
+
+<!-- 12. EXEMPLES COMPLETS -->
+<h2 id="examples">12. Exemples complets</h2>
+
+<h3>🎸 Exemple 1 — Mod de contenu : "Extreme Rock Pack"</h3>
+<pre>(<span class="kw">function</span>() {
+  RSC_MOD.<span class="fn">_register</span>({ name: <span class="str">'Extreme Rock Pack'</span>, version: <span class="str">'1.0'</span>, author: <span class="str">'TonPseudo'</span> });
+
+  <span class="cm">// Lieu ultime</span>
+  RSC_MOD.<span class="fn">addVenue</span>(<span class="str">'planet'</span>, {
+    name: <span class="str">'Concert Planétaire'</span>,
+    revenue: <span class="num">1000000</span>,
+    fans: <span class="num">100000</span>,
+    difficulty: <span class="num">0.99</span>,
+    cooldown: <span class="num">300</span>
+  }, <span class="num">9999</span>);
+
+  <span class="cm">// Groupe légendaire</span>
+  RSC_MOD.<span class="fn">addGroup</span>({ name: <span class="str">'Gods of Rock'</span>, minPop: <span class="num">8000</span>, bonus: <span class="num">15</span>, members: <span class="num">12</span> });
+
+  <span class="cm">// Achievement pour le nouveau lieu</span>
+  RSC_MOD.<span class="fn">addAchievement</span>({
+    id: <span class="str">'erp_planet'</span>,
+    name: <span class="str">'Superstar Galactique'</span>,
+    desc: <span class="str">'Joue un Concert Planétaire'</span>,
+    icon: <span class="str">'🌍'</span>,
+    check: () => (player.festivalPlayed || <span class="num">0</span>) >= <span class="num">1</span> && player.popularity >= <span class="num">9999</span>,
+    reward: { money: <span class="num">500000</span>, fans: <span class="num">50000</span> }
+  });
+})();</pre>
+
+<h3>⚙️ Exemple 2 — Mod de rééquilibrage</h3>
+<pre>(<span class="kw">function</span>() {
+  RSC_MOD.<span class="fn">_register</span>({ name: <span class="str">'Easy Mode'</span>, version: <span class="str">'1.0'</span> });
+
+  <span class="cm">// Rendre tous les concerts 50% plus lucratifs</span>
+  [<span class="str">'bar'</span>, <span class="str">'club'</span>, <span class="str">'salle'</span>, <span class="str">'theatre'</span>, <span class="str">'arena'</span>, <span class="str">'festival'</span>].forEach(id => {
+    RSC_MOD.<span class="fn">patchVenue</span>(id, {
+      revenue: Math.floor(venues[id].revenue * <span class="num">1.5</span>),
+      difficulty: Math.max(<span class="num">0.1</span>, venues[id].difficulty - <span class="num">0.1</span>)
+    });
+  });
+
+  <span class="cm">// Donner un bon départ</span>
+  RSC_MOD.<span class="fn">setPlayerStat</span>(<span class="str">'money'</span>, player.money + <span class="num">5000</span>);
+  RSC_MOD.<span class="fn">toast</span>(<span class="str">'Easy Mode activé !'</span>);
+})();</pre>
+
+<!-- 13. RÉFÉRENCE PLAYER -->
+<h2 id="player-object">13. Référence : objet <code>player</code></h2>
+<p>L'objet <code>player</code> est global et accessible directement depuis les mods.</p>
+
+<pre><span class="cm">// Propriétés principales</span>
+player.name          <span class="cm">// string — nom de scène</span>
+player.instrument    <span class="cm">// string</span>
+player.age           <span class="cm">// number — âge (décimal)</span>
+player.health        <span class="cm">// number — 0 à 100</span>
+player.addiction     <span class="cm">// number — 0 à 100</span>
+player.money         <span class="cm">// number</span>
+player.fans          <span class="cm">// number</span>
+player.popularity    <span class="cm">// number</span>
+player.concertsPlayed <span class="cm">// number</span>
+player.group         <span class="cm">// object | null — { name, bonus, members, minPop }</span>
+player.albums        <span class="cm">// Array d'albums sortis</span>
+
+<span class="cm">// Compétences</span>
+player.skills.technique   <span class="cm">// 0–100</span>
+player.skills.scene       <span class="cm">// 0–100</span>
+player.skills.composition <span class="cm">// 0–100</span>
+player.skills.charisme    <span class="cm">// 0–100</span>
+player.skills.marketing   <span class="cm">// 0–100</span>
+player.skills.endurance   <span class="cm">// 0–100</span>
+
+<span class="cm">// Équipement (niveau 0 = non acheté)</span>
+player.equipment.instrument   <span class="cm">// 0–5</span>
+player.equipment.amplifier    <span class="cm">// 0–4</span>
+player.equipment.lights       <span class="cm">// 0–4</span>
+player.equipment.pyrotechnics <span class="cm">// 0–4</span>
+player.equipment.soundSystem  <span class="cm">// 0–4</span>
+player.equipment.transport    <span class="cm">// 0–4</span>
+player.equipment.studio       <span class="cm">// 0–3</span>
+
+<span class="cm">// Réseaux sociaux</span>
+player.totalPosts       <span class="cm">// number</span>
+player.fansFromSocial   <span class="cm">// number</span>
+player.bestPostQuality  <span class="cm">// number (0–100)</span>
+player.activePlatform   <span class="cm">// string — id de la plateforme active</span>
+
+<span class="cm">// Achievements débloqués</span>
+player.unlockedAchievements <span class="cm">// Array de strings (ids)</span></pre>
+
+<hr>
+<footer>
+  Rock Star Career — Guide du Modding v1.0.0 &nbsp;·&nbsp; Bonne chance, modeur 🎸
+</footer>
+
+</div>
+</body>
+</html>

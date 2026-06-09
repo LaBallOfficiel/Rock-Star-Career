@@ -97,6 +97,11 @@ function updateCooldowns() {
     if (player.jobCooldown > 0) player.jobCooldown--;
     if (player.socialCooldown > 0) player.socialCooldown--;
 
+    // Hooks de mods (onTick)
+    if (window._modTicks && window._modTicks.length > 0) {
+        window._modTicks.forEach(({ fn }) => { try { fn(gameTime, player); } catch(e) {} });
+    }
+
     if (currentView === 'training' || currentView === 'concert' || currentView === 'albums' || currentView === 'lifestyle' || currentView === 'social') {
         showView(currentView);
     }

@@ -153,5 +153,13 @@ function doConcert(type) {
         </div>`;
     
     updateDisplay();
+
+    // Hooks de mods (onConcertEnd)
+    if (window._modConcertHooks && window._modConcertHooks.length > 0) {
+        window._modConcertHooks.forEach(({ fn }) => {
+            try { fn({ type, revenue, fans: newFans, success, quality }); } catch(e) {}
+        });
+    }
+
     showView('concert');
 }

@@ -12,7 +12,8 @@ function showView(view) {
         history: showHistoryView,
         albums: showAlbumsView,
         achievements: showAchievementsView,
-        social: showSocialView
+        social: showSocialView,
+        mods: showModView
     };
     if (views[view]) views[view](content);
 
