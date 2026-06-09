@@ -76,9 +76,9 @@ function hasAnyEquipment() {
 function calculateMaintenance() {
     let cost = 0;
     for (let eq in player.equipment) {
-        if (player.equipment[eq] > 0) cost += player.equipment[eq] * 40; // 40 au lieu de 50
+        if (player.equipment[eq] > 0) cost += player.equipment[eq] * 45; // légèrement plus cher
     }
-    if (player.group) cost += 150; // 150 au lieu de 200
+    if (player.group) cost += 175;
     return cost;
 }
 

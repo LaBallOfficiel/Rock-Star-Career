@@ -63,18 +63,20 @@
             </div>
 
             <div class="main-layout">
-                <div class="sidebar">
-                    <button onclick="showView('concert')">🎤 Concerts</button>
-                    <button onclick="showView('training')">📚 Entraînement</button>
-                    <button onclick="showView('albums')">💿 Albums</button>
-                    <button onclick="showView('shop')">🛒 Boutique</button>
-                    <button onclick="showView('groups')">🎸 Groupes</button>
-                    <button onclick="showView('lifestyle')">💊 Lifestyle</button>
-                    <button onclick="showView('social')" style="background: linear-gradient(135deg, #001a3a 0%, #0066cc 100%);">📱 Réseaux Sociaux</button>
-                    <button onclick="showView('stats')">📊 Statistiques</button>
-                    <button onclick="showView('achievements')" style="background: linear-gradient(135deg, #4a0080 0%, #9900ff 100%);">🏆 Achievements</button>
-                    <button onclick="showView('history')">📜 Historique</button>
-                    <button onclick="saveGame()" style="background: linear-gradient(135deg, #0a5c8b 0%, #00aaff 100%);">💾 Sauvegarder</button>
+                <div class="sidebar" id="sidebar">
+                    <button onclick="showView('concert')" id="btn-concert">🎤 Concerts</button>
+                    <button onclick="showView('training')" id="btn-training">📚 Entraînement</button>
+                    <button onclick="showView('albums')" id="btn-albums">💿 Albums</button>
+                    <button onclick="showView('shop')" id="btn-shop">🛒 Boutique</button>
+                    <button onclick="showView('groups')" id="btn-groups">🎸 Groupes</button>
+                    <button onclick="showView('lifestyle')" id="btn-lifestyle">💊 Lifestyle</button>
+                    <button onclick="showView('social')" id="btn-social">📱 Réseaux Sociaux</button>
+                    <div class="sidebar-divider"></div>
+                    <button onclick="showView('stats')" id="btn-stats">📊 Statistiques</button>
+                    <button onclick="showView('achievements')" id="btn-achievements">🏆 Achievements</button>
+                    <button onclick="showView('history')" id="btn-history">📜 Historique</button>
+                    <div class="sidebar-divider"></div>
+                    <button onclick="saveGame()" class="btn-save">💾 Sauvegarder</button>
                 </div>
                 <div class="content-area" id="contentArea"></div>
             </div>

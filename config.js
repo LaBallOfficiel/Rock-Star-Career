@@ -72,22 +72,22 @@ const drugs = {
 
 // Configuration des lieux de concerts
 const venues = {
-    bar: { name: 'Bar Local', revenue: 120, fans: 25, difficulty: 0.2, cooldown: 12 },
-    club: { name: 'Club', revenue: 400, fans: 120, difficulty: 0.4, cooldown: 18 },
-    salle: { name: 'Grande Salle', revenue: 2000, fans: 450, difficulty: 0.55, cooldown: 25 },
-    theatre: { name: 'Théâtre', revenue: 5000, fans: 900, difficulty: 0.65, cooldown: 40 },
-    arena: { name: 'Arena', revenue: 13000, fans: 2200, difficulty: 0.72, cooldown: 55 },
-    festival: { name: 'Festival', revenue: 48000, fans: 7000, difficulty: 0.82, cooldown: 80 }
+    bar:      { name: 'Bar Local',    revenue: 100,   fans: 20,   difficulty: 0.25, cooldown: 14 },
+    club:     { name: 'Club',         revenue: 350,   fans: 100,  difficulty: 0.45, cooldown: 20 },
+    salle:    { name: 'Grande Salle', revenue: 1800,  fans: 400,  difficulty: 0.60, cooldown: 28 },
+    theatre:  { name: 'Théâtre',      revenue: 4500,  fans: 800,  difficulty: 0.68, cooldown: 42 },
+    arena:    { name: 'Arena',        revenue: 12000, fans: 2000, difficulty: 0.76, cooldown: 58 },
+    festival: { name: 'Festival',     revenue: 45000, fans: 6500, difficulty: 0.86, cooldown: 85 }
 };
 
-// Seuils de popularité pour les concerts (réduits)
+// Seuils de popularité pour les concerts
 const venuePop = {
-    bar: 0,
-    club: 30,
-    salle: 120,
-    theatre: 350,
-    arena: 800,
-    festival: 2000
+    bar:     0,
+    club:    40,
+    salle:   140,
+    theatre: 400,
+    arena:   900,
+    festival: 2200
 };
 
 // Configuration des compétences

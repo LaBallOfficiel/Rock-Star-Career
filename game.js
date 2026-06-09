@@ -45,27 +45,27 @@ function passTime() {
     
     // Gestion de l'addiction
     if (player.addiction > 0) {
-        player.health -= player.addiction / 18; // Un peu plus lent
+        player.health -= player.addiction / 16; // Un peu plus punitif qu'avant (était /18)
         player.daysWithoutDrugs = 0;
-        if (Math.random() < 0.12) player.addiction = Math.max(0, player.addiction - 0.5);
+        if (Math.random() < 0.10) player.addiction = Math.max(0, player.addiction - 0.5);
     } else {
         player.daysWithoutDrugs += 55;
-        if (player.health < 100) player.health += 0.8; // Récup un peu plus rapide
+        if (player.health < 100) player.health += 0.6;
     }
-    
-    // Coûts de maintenance (toutes les 90s) — réduits de 20%
+
+    // Coûts de maintenance (toutes les 90s)
     if (gameTime % 90 === 0 && hasAnyEquipment()) {
         let maintenanceCost = calculateMaintenance();
         player.money -= maintenanceCost;
         if (player.money < 0) {
-            player.health -= 5;
-            showToast('⚠️ Tu n\'as plus assez d\'argent pour la maintenance ! Santé -5%', 3000);
+            player.health -= 7; // plus punitif
+            showToast('⚠️ Maintenance impayée ! Santé -7%', 3000);
         }
     }
-    
-    // Perte de popularité — plus lente (toutes les 180s au lieu de 120s, et seulement 1%)
-    if (gameTime % 180 === 0 && player.popularity > 0) {
-        player.popularity = Math.max(0, player.popularity - Math.floor(player.popularity * 0.01));
+
+    // Perte de popularité (toutes les 150s, 1.5%)
+    if (gameTime % 150 === 0 && player.popularity > 0) {
+        player.popularity = Math.max(0, player.popularity - Math.floor(player.popularity * 0.015));
     }
     
     // Effets du vieillissement

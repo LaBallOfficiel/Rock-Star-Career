@@ -82,7 +82,7 @@ function recordAlbum(type) {
     let quality = Math.floor((avgSkill * 0.65 + equipBonus * 0.75) * groupBonus * (0.35 + Math.random() * 0.45));
     quality = Math.min(100, quality);
     
-    const isPopular = quality >= 55; // Seuil abaissé de 70 à 55
+    const isPopular = quality >= 62; // Entre 55 (trop facile) et 70 (trop dur)
     const albumName = generateAlbumName();
     
     let maxRevenuePerMinute = 0;

@@ -10,7 +10,7 @@ function showTrainingView(content) {
         <p style="color: #ff6b6b; margin-bottom: 20px;">Améliore tes compétences pour devenir une légende ! Cooldown: 10 secondes</p>
         <div class="training-grid">
             ${skills.map(skill => {
-                const cost = Math.floor(50 + player.skills[skill.key] * 3); // Moins cher
+        const cost = Math.floor(70 + player.skills[skill.key] * 4); // un peu plus cher
                 const canTrain = !isPlayerBusy() && player.money >= cost && player.skills[skill.key] < 100;
                 return `
                     <div style="background: rgba(139, 0, 0, 0.2); border: 2px solid #8b0000; padding: 15px; border-radius: 5px;">
@@ -39,7 +39,7 @@ function trainSkill(skill) {
         return;
     }
     
-    const cost = Math.floor(50 + player.skills[skill] * 3);
+    const cost = Math.floor(70 + player.skills[skill] * 4);
     if (player.money < cost) return;
     
     player.money -= cost;

@@ -15,6 +15,11 @@ function showView(view) {
         social: showSocialView
     };
     if (views[view]) views[view](content);
+
+    // Highlight bouton actif
+    document.querySelectorAll('.sidebar button[id^="btn-"]').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById('btn-' + view);
+    if (activeBtn) activeBtn.classList.add('active');
 }
 
 // =====================
