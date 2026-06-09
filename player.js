@@ -23,7 +23,14 @@ let player = {
     infiniteMoney: false,
     infiniteStats: false,
     unlockedAchievements: [],
-    festivalPlayed: 0
+    festivalPlayed: 0,
+    jobCooldown: 0,
+    socialCooldown: 0,
+    activePlatform: 'tiktok',
+    totalPosts: 0,
+    fansFromSocial: 0,
+    bestPostQuality: 0,
+    postHistory: []
 };
 
 // Variables globales
@@ -108,6 +115,13 @@ function loadGame() {
             if (player.equipment.studio === undefined) player.equipment.studio = 0;
             if (player.unlockedAchievements === undefined) player.unlockedAchievements = [];
             if (player.festivalPlayed === undefined) player.festivalPlayed = 0;
+            if (player.jobCooldown === undefined) player.jobCooldown = 0;
+            if (player.socialCooldown === undefined) player.socialCooldown = 0;
+            if (player.activePlatform === undefined) player.activePlatform = 'tiktok';
+            if (player.totalPosts === undefined) player.totalPosts = 0;
+            if (player.fansFromSocial === undefined) player.fansFromSocial = 0;
+            if (player.bestPostQuality === undefined) player.bestPostQuality = 0;
+            if (player.postHistory === undefined) player.postHistory = [];
             
             if (player.albums && player.albums.length > 0) {
                 player.albums = player.albums.map(album => {

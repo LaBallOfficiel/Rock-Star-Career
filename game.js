@@ -94,8 +94,10 @@ function updateCooldowns() {
     if (player.albumCooldown > 0) player.albumCooldown--;
     if (player.restCooldown > 0) player.restCooldown--;
     if (player.partyCooldown > 0) player.partyCooldown--;
+    if (player.jobCooldown > 0) player.jobCooldown--;
+    if (player.socialCooldown > 0) player.socialCooldown--;
 
-    if (currentView === 'training' || currentView === 'concert' || currentView === 'albums' || currentView === 'lifestyle') {
+    if (currentView === 'training' || currentView === 'concert' || currentView === 'albums' || currentView === 'lifestyle' || currentView === 'social') {
         showView(currentView);
     }
     // Mise à jour du revenu passif dans le header
