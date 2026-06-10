@@ -31,7 +31,7 @@ const RSC_MOD = (() => {
         // ── Infos ──────────────────────────────────────────
 
         /** Retourne la version de l'API mod */
-        version: '1.0.0',
+        get version() { return (typeof GAME_VERSION !== 'undefined') ? GAME_VERSION : '?.?.?'; },
 
         /** Liste les mods actuellement chargés */
         listMods() {
@@ -216,15 +216,32 @@ const RSC_MOD = (() => {
         // ── Registre interne ─────────────────────────────
 
         _register(meta) {
-            loadedMods.push({ ...meta, loadedAt: new Date().toLocaleTimeString(), _id: loadedMods.length });
+            const gameVer = (typeof GAME_VERSION !== 'undefined') ? GAME_VERSION : null;
+            const entry = { 
+                ...meta, 
+                loadedAt: new Date().toLocaleTimeString(), 
+                _id: loadedMods.length,
+                _gameVersionAtLoad: gameVer
+            };
+            loadedMods.push(entry);
             log(meta.name, `v${meta.version || '?'} chargé avec succès ✓`, 'success');
-            if (typeof showToast === 'function') showToast(`📦 Mod chargé : ${meta.name} v${meta.version || '?'}`, 3000);
+
+            // Vérification de compatibilité de version
+            const modGameVer = meta.gameVersion || null;
+            if (!modGameVer) {
+                if (typeof showToast === 'function') showToast(`⚠️ Mod "${meta.name}" : version de jeu inconnue — risque d'incompatibilité !`, 5000);
+            } else if (modGameVer !== gameVer) {
+                if (typeof showToast === 'function') showToast(`⚠️ Mod "${meta.name}" fait pour v${modGameVer}, jeu en v${gameVer} — des bugs sont possibles !`, 5000);
+            } else {
+                if (typeof showToast === 'function') showToast(`📦 Mod chargé : ${meta.name} v${meta.version || '?'}`, 3000);
+            }
         },
 
         /** Désactive un mod (le retire des hooks sans le supprimer) */
         toggleMod(idx) {
             if (_disabledMods.has(idx)) _disabledMods.delete(idx);
             else _disabledMods.add(idx);
+            if (typeof saveGame === 'function') saveGame();
             if (typeof showView === 'function') showView('mods');
         },
 
@@ -232,6 +249,7 @@ const RSC_MOD = (() => {
         deleteMod(idx) {
             loadedMods.splice(idx, 1);
             _disabledMods.delete(idx);
+            if (typeof saveGame === 'function') saveGame();
             if (typeof showView === 'function') showView('mods');
         }
     };
@@ -263,6 +281,7 @@ function removeTexturePack(packName) {
     if (idx === -1) return false;
     _loadedTexturePacks.splice(idx, 1);
     rebuildTextureStyle();
+    if (typeof saveGame === 'function') saveGame();
     return true;
 }
 
@@ -273,6 +292,7 @@ function resetAllTextures() {
     _loadedTexturePacks.length = 0;
     const styleEl = document.getElementById('rsc-texture-style');
     if (styleEl) styleEl.textContent = '';
+    if (typeof saveGame === 'function') saveGame();
 }
 
 // Expose dans RSC_MOD
@@ -402,6 +422,7 @@ function toggleTexturePack(name) {
     if (!pack) return;
     pack.disabled = !pack.disabled;
     rebuildTextureStyle();
+    if (typeof saveGame === 'function') saveGame();
     showView('textures');
 }
 
@@ -463,6 +484,7 @@ function applyTextureFromEditor() {
     const name = document.getElementById('texturePackName')?.value?.trim() || ('Pack ' + (_loadedTexturePacks.length + 1));
     if (!css) { showTextureError('Éditeur CSS vide, rien à appliquer.'); return; }
     RSC_MOD.loadTexturePack(name, css);
+    if (typeof saveGame === 'function') saveGame();
     showView('textures');
 }
 
@@ -559,13 +581,19 @@ function loadPresetTexture(presetId) {
 
 function showModView(content) {
     const loaded = RSC_MOD.listMods();
+    const gameVer = (typeof GAME_VERSION !== 'undefined') ? GAME_VERSION : '?.?.?';
 
     content.innerHTML = `
         <h2 style="color:#ff0000; margin-bottom:5px;">🔧 Mod Loader</h2>
-        <p style="color:#888; font-size:0.85em; margin-bottom:20px;">
-            Importe des fichiers <code style="color:#ffa500;">.js</code> de mod pendant la partie. 
-            <a href="MOD_DOCUMENTATION.html" target="_blank" style="color:#ff6b6b;">📄 Documentation modding</a>
-        </p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; flex-wrap:wrap;">
+            <p style="color:#888; font-size:0.85em; margin:0;">
+                Importe des fichiers <code style="color:#ffa500;">.js</code> de mod pendant la partie. 
+                <a href="MOD_DOCUMENTATION.html" target="_blank" style="color:#ff6b6b;">📄 Documentation modding</a>
+            </p>
+            <span style="background:rgba(139,0,0,0.35); border:1px solid #8b0000; border-radius:4px; padding:3px 10px; font-size:0.8em; color:#ff6b6b; white-space:nowrap;">
+                🎮 Jeu v${gameVer}
+            </span>
+        </div>
 
         <!-- Zone d'import -->
         <div style="background:rgba(0,0,0,0.5); border:2px dashed #8b0000; border-radius:8px; padding:25px; text-align:center; margin-bottom:20px;" 
@@ -592,7 +620,7 @@ function showModView(content) {
                 </div>
             </div>
             <textarea id="modCodeEditor" 
-                placeholder="// Colle ou écris ton code de mod ici\n// Exemple :\nRSC_MOD._register({ name: 'Mon Mod', version: '1.0' });\nRSC_MOD.setPlayerStat('money', 50000);"
+                placeholder="// Colle ou écris ton code de mod ici\n// Exemple :\nRSC_MOD._register({ name: 'Mon Mod', version: '1.0', gameVersion: '${gameVer}' });\nRSC_MOD.setPlayerStat('money', 50000);"
                 style="width:100%; height:200px; background:#0d0d0d; border:2px solid #5a0000; color:#e0e0e0; font-family:'Courier New',monospace; font-size:13px; padding:14px; border-radius:6px; resize:vertical; box-sizing:border-box; outline:none; line-height:1.6;"
                 spellcheck="false"
                 onkeydown="handleEditorTab(event)"></textarea>
@@ -605,16 +633,28 @@ function showModView(content) {
                 ? '<p style="color:#555; font-style:italic;">Aucun mod chargé.</p>'
                 : loaded.map((m, i) => {
                     const disabled = _disabledMods.has(i);
+                    const modGameVer = m.gameVersion || null;
+                    let verBadge = '';
+                    if (!modGameVer) {
+                        verBadge = `<span style="background:rgba(139,0,0,0.5); border:1px solid #cc4400; border-radius:4px; padding:2px 7px; font-size:0.72em; color:#ff8855; margin-left:6px;" title="Version de jeu non précisée par le développeur">⚠️ version inconnue</span>`;
+                    } else if (modGameVer !== gameVer) {
+                        verBadge = `<span style="background:rgba(100,60,0,0.5); border:1px solid #cc9900; border-radius:4px; padding:2px 7px; font-size:0.72em; color:#ffcc44; margin-left:6px;" title="Ce mod a été créé pour une autre version du jeu">⚠️ fait pour v${modGameVer}</span>`;
+                    } else {
+                        verBadge = `<span style="background:rgba(0,60,0,0.4); border:1px solid #006600; border-radius:4px; padding:2px 7px; font-size:0.72em; color:#44cc44; margin-left:6px;">✓ v${modGameVer}</span>`;
+                    }
                     return `
                     <div style="background:rgba(${disabled ? '40,40,40' : '0,80,0'},0.3); border:1px solid ${disabled ? '#555' : '#00aa00'}; border-radius:6px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; opacity:${disabled ? '0.6' : '1'};">
-                        <div>
-                            <span style="color:${disabled ? '#888' : '#00ff00'}; font-weight:bold;">📦 ${m.name}</span>
-                            ${m.version ? `<span style="color:#888; font-size:0.8em; margin-left:8px;">v${m.version}</span>` : ''}
-                            ${m.author ? `<span style="color:#888; font-size:0.8em; margin-left:8px;">par ${m.author}</span>` : ''}
-                            ${disabled ? '<span style="color:#888; font-size:0.75em; margin-left:8px; font-style:italic;">— désactivé</span>' : ''}
+                        <div style="min-width:0; flex:1;">
+                            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:3px;">
+                                <span style="color:${disabled ? '#888' : '#00ff00'}; font-weight:bold;">📦 ${m.name}</span>
+                                ${m.version ? `<span style="color:#888; font-size:0.8em;">v${m.version}</span>` : ''}
+                                ${m.author ? `<span style="color:#888; font-size:0.8em;">par ${m.author}</span>` : ''}
+                                ${verBadge}
+                            </div>
+                            ${disabled ? '<span style="color:#888; font-size:0.75em; font-style:italic;">— désactivé</span>' : ''}
                         </div>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <span style="color:#555; font-size:0.75em;">chargé à ${m.loadedAt}</span>
+                        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0; margin-left:10px;">
+                            <span style="color:#555; font-size:0.75em; white-space:nowrap;">chargé à ${m.loadedAt}</span>
                             <button onclick="RSC_MOD.toggleMod(${i})" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,${disabled ? '#1a4400,#336600' : '#442200,#885500'}); border-color:${disabled ? '#44aa00' : '#cc7700'}; margin:0;">${disabled ? '▶️ Act.' : '⏸ Désact.'}</button>
                             <button onclick="RSC_MOD.deleteMod(${i})" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3a0000,#880000); border-color:#ff4444; margin:0;">🗑️</button>
                         </div>
@@ -653,14 +693,24 @@ function runModCode() {
     const code = document.getElementById('modCodeEditor').value.trim();
     if (!code) return;
     clearModLog();
+    // On stocke le code source pour pouvoir le sauvegarder
+    window._pendingModCode = code;
     try {
         const fn = new Function(code);
         fn();
+        // Associer le code source au dernier mod enregistré (s'il n'en a pas déjà un)
+        const mods = RSC_MOD.listMods();
+        if (mods.length > 0) {
+            const last = mods[mods.length - 1];
+            if (!last._sourceCode) last._sourceCode = code;
+        }
+        if (typeof saveGame === 'function') saveGame();
         showView('mods');
     } catch (err) {
         showModError(`Erreur d'exécution : ${err.message}`);
         console.error('[MOD ERROR]', err);
     }
+    window._pendingModCode = null;
 }
 
 function clearModEditor() {
@@ -689,5 +739,77 @@ function handleEditorTab(e) {
         const end = ta.selectionEnd;
         ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
         ta.selectionStart = ta.selectionEnd = start + 4;
+    }
+}
+
+// ============================================================
+// RESTAURATION DES MODS ET TEXTURES À LA REPRISE D'UNE PARTIE
+// ============================================================
+
+/** Recharge les mods sauvegardés depuis localStorage */
+function _restoreSavedMods() {
+    const raw = localStorage.getItem('rsc_savedMods');
+    if (!raw) return;
+    let saved;
+    try { saved = JSON.parse(raw); } catch(e) { return; }
+    if (!Array.isArray(saved) || saved.length === 0) return;
+
+    const gameVer = (typeof GAME_VERSION !== 'undefined') ? GAME_VERSION : null;
+    let restored = 0;
+    let warnings = [];
+
+    saved.forEach((m, i) => {
+        if (!m._sourceCode) return; // pas de code source = non rejouable
+        try {
+            const fn = new Function(m._sourceCode);
+            fn();
+            // Marquer comme désactivé si il l'était
+            if (m.disabled) _disabledMods.add(i);
+            restored++;
+            // Vérification de version après restauration
+            const modGameVer = m.gameVersion || null;
+            if (!modGameVer) {
+                warnings.push(`⚠️ "${m.name}" : version inconnue`);
+            } else if (modGameVer !== gameVer) {
+                warnings.push(`⚠️ "${m.name}" : fait pour v${modGameVer}, jeu en v${gameVer}`);
+            }
+        } catch(e) {
+            console.warn(`[MOD RESTORE] Échec pour "${m.name}" :`, e);
+        }
+    });
+
+    if (restored > 0) {
+        showToast(`📦 ${restored} mod(s) restauré(s) depuis la sauvegarde`, 3500);
+    }
+    if (warnings.length > 0) {
+        setTimeout(() => {
+            warnings.forEach(w => showToast(w + ' — des bugs sont possibles !', 6000));
+        }, 1000);
+    }
+}
+
+/** Recharge les texture packs sauvegardés depuis localStorage */
+function _restoreSavedTextures() {
+    const raw = localStorage.getItem('rsc_savedTextures');
+    if (!raw) return;
+    let saved;
+    try { saved = JSON.parse(raw); } catch(e) { return; }
+    if (!Array.isArray(saved) || saved.length === 0) return;
+
+    saved.forEach(p => {
+        if (!p.name || !p.css) return;
+        // Ajouter au registre sans re-toast
+        _loadedTexturePacks.push({ 
+            name: p.name, 
+            css: p.css, 
+            loadedAt: p.loadedAt || '?',
+            disabled: p.disabled || false
+        });
+    });
+    rebuildTextureStyle();
+
+    const count = saved.length;
+    if (count > 0) {
+        showToast(`🎨 ${count} texture pack(s) restauré(s)`, 3000);
     }
 }

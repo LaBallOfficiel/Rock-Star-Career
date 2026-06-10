@@ -86,6 +86,26 @@ function calculateMaintenance() {
 function saveGame() {
     if (!player.isDead) {
         localStorage.setItem('currentGame', JSON.stringify(player));
+
+        // Sauvegarde des mods chargés (code source + métadonnées)
+        if (typeof RSC_MOD !== 'undefined') {
+            const modsToSave = RSC_MOD.listMods().map((m, i) => ({
+                ...m,
+                disabled: (typeof _disabledMods !== 'undefined') ? _disabledMods.has(i) : false
+            }));
+            localStorage.setItem('rsc_savedMods', JSON.stringify(modsToSave));
+        }
+
+        // Sauvegarde des texture packs (nom + CSS + état désactivé)
+        if (typeof _loadedTexturePacks !== 'undefined') {
+            const packsToSave = _loadedTexturePacks.map(p => ({
+                name: p.name,
+                css: p.css,
+                loadedAt: p.loadedAt,
+                disabled: p.disabled || false
+            }));
+            localStorage.setItem('rsc_savedTextures', JSON.stringify(packsToSave));
+        }
     }
 }
 
@@ -138,6 +158,13 @@ function loadGame() {
             document.getElementById('gameScreen').classList.add('active');
             updateDisplay();
             showView('concert');
+
+            // Rechargement des mods et textures sauvegardés
+            // (exécuté après le démarrage du jeu pour que les hooks soient disponibles)
+            setTimeout(() => {
+                _restoreSavedMods();
+                _restoreSavedTextures();
+            }, 200);
             
             setInterval(() => {
                 gameTime++;

@@ -1,3 +1,8 @@
+// =====================
+// VERSION DU JEU
+// =====================
+const GAME_VERSION = '1.2.0';
+
 // Configuration des groupes
 const groups = [
     { name: 'Les Débutants', minPop: 0, bonus: 1.2, members: 3 },
