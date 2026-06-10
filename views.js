@@ -13,7 +13,8 @@ function showView(view) {
         albums: showAlbumsView,
         achievements: showAchievementsView,
         social: showSocialView,
-        mods: showModView
+        mods: showModView,
+        textures: showTextureView
     };
     if (views[view]) views[view](content);
 

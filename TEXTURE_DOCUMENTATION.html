@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rock Star Career — Documentation Texture Packs</title>
+<style>
+  :root {
+    --gold: #ffd700;
+    --gold-dim: #cc9900;
+    --bg: #0d0800;
+    --bg2: #1a1000;
+    --border: #5a3a00;
+    --text: #e0d0a0;
+    --muted: #888;
+    --code-bg: #0a0500;
+    --green: #44cc00;
+    --red: #ff4444;
+    --blue: #44aaff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+    color: var(--text);
+    padding: 30px 20px;
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+  .wrapper { max-width: 960px; margin: 0 auto; }
+  h1 {
+    font-size: 2.2em;
+    color: var(--gold);
+    text-shadow: 0 0 15px var(--gold), 0 0 30px var(--gold-dim);
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: 3px;
+  }
+  .subtitle { text-align: center; color: var(--muted); margin-bottom: 40px; font-size: 0.95em; }
+  h2 {
+    color: var(--gold);
+    font-size: 1.4em;
+    margin: 40px 0 14px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { color: #ffcc66; font-size: 1.1em; margin: 22px 0 8px 0; }
+  p { margin-bottom: 12px; color: var(--text); }
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #ffcc66;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 14px 0 20px 0;
+    font-size: 0.88em;
+    color: #d4c080;
+    white-space: pre;
+  }
+  pre .comment { color: #666; }
+  pre .selector { color: #ff9944; }
+  pre .property { color: #44aaff; }
+  pre .value { color: #88ee44; }
+  pre .string { color: #ffcc66; }
+  .tip {
+    background: rgba(255,200,0,0.08);
+    border-left: 4px solid var(--gold);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.92em;
+  }
+  .tip strong { color: var(--gold); }
+  .warn {
+    background: rgba(255,60,0,0.1);
+    border-left: 4px solid #ff6600;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.92em;
+  }
+  .warn strong { color: #ff8844; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px 0;
+    font-size: 0.88em;
+  }
+  th {
+    background: rgba(139,105,20,0.3);
+    color: var(--gold);
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: rgba(255,200,0,0.03); }
+  td code { font-size: 0.85em; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-easy { background: rgba(68,204,0,0.2); color: var(--green); border: 1px solid var(--green); }
+  .badge-med  { background: rgba(255,165,0,0.2); color: #ffa500; border: 1px solid #ffa500; }
+  .badge-adv  { background: rgba(255,50,50,0.2); color: var(--red); border: 1px solid var(--red); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+  .card {
+    background: rgba(60,40,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card h4 { color: var(--gold); margin-bottom: 8px; font-size: 1em; }
+  .card p { font-size: 0.85em; color: var(--muted); margin: 0; }
+  .toc {
+    background: rgba(60,40,0,0.3);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 30px;
+  }
+  .toc h3 { color: var(--gold); margin-top: 0; margin-bottom: 12px; }
+  .toc a { color: #ffcc66; text-decoration: none; font-size: 0.92em; }
+  .toc a:hover { color: var(--gold); text-decoration: underline; }
+  .toc li { margin: 5px 0; }
+  .toc ol { padding-left: 20px; }
+  footer { text-align: center; color: #555; font-size: 0.8em; margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <h1>🎨 TEXTURE PACKS</h1>
+  <p class="subtitle">Guide complet pour créer des thèmes visuels pour Rock Star Career</p>
+
+  <div class="toc">
+    <h3>📋 Table des matières</h3>
+    <ol>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#quickstart">Démarrage rapide</a></li>
+      <li><a href="#selectors">Sélecteurs CSS importants</a></li>
+      <li><a href="#variables">Variables et valeurs de référence</a></li>
+      <li><a href="#examples">Exemples complets</a></li>
+      <li><a href="#api">API JavaScript (RSC_MOD)</a></li>
+      <li><a href="#tips">Bonnes pratiques</a></li>
+      <li><a href="#troubleshoot">Dépannage</a></li>
+    </ol>
+  </div>
+
+  <!-- INTRO -->
+  <h2 id="intro">1. Introduction</h2>
+  <p>Le <strong>Texture Loader</strong> de Rock Star Career te permet de modifier l'apparence visuelle du jeu en injectant du CSS personnalisé. Tu peux :</p>
+  <ul style="margin: 0 0 14px 20px;">
+    <li>Changer les couleurs, dégradés et arrière-plans</li>
+    <li>Modifier les bordures, ombres et effets lumineux</li>
+    <li>Appliquer des polices, tailles et espacements différents</li>
+    <li>Ajouter des animations et effets visuels</li>
+    <li>Combiner plusieurs texture packs simultanément</li>
+  </ul>
+
+  <div class="tip">
+    <strong>💡 Tip :</strong> Ton CSS est injecté dans une balise <code>&lt;style id="rsc-texture-style"&gt;</code> dédiée. Il ne remplace pas le CSS de base, mais le surcharge grâce à <code>!important</code>. Tu n'as pas besoin de tout réécrire — cible uniquement ce que tu veux modifier.
+  </div>
+
+  <!-- QUICKSTART -->
+  <h2 id="quickstart">2. Démarrage rapide</h2>
+
+  <h3>Méthode 1 : Importer un fichier .css <span class="badge badge-easy">Facile</span></h3>
+  <p>Crée un fichier texte avec l'extension <code>.css</code>, écris ton CSS dedans, puis glisse-le dans la zone d'import du Texture Loader.</p>
+
+  <h3>Méthode 2 : Éditeur CSS en ligne <span class="badge badge-easy">Facile</span></h3>
+  <p>Colle directement ton CSS dans l'éditeur intégré, donne un nom à ton pack, et clique sur <strong>Appliquer</strong>. Le bouton <strong>Aperçu</strong> applique le CSS pendant 5 secondes pour tester sans sauvegarder.</p>
+
+  <h3>Méthode 3 : Via l'API JavaScript <span class="badge badge-med">Intermédiaire</span></h3>
+  <p>Depuis le Mod Loader (onglet 🔧 Mods), tu peux charger un texture pack via l'API :</p>
+<pre><span class="comment">// Charge un texture pack depuis un mod JS</span>
+<span class="selector">RSC_MOD</span>.<span class="property">loadTexturePack</span>(<span class="string">'Mon Pack'</span>, <span class="string">`
+  body {
+    background: #0a0a1a !important;
+  }
+  h1 {
+    color: #cc66ff !important;
+  }
+`</span>);</pre>
+
+  <!-- SELECTORS -->
+  <h2 id="selectors">3. Sélecteurs CSS importants</h2>
+  <p>Voici les éléments du jeu et leurs sélecteurs CSS. Utilise <code>!important</code> pour t'assurer que tes styles écrasent ceux du jeu.</p>
+
+  <table>
+    <tr><th>Élément</th><th>Sélecteur CSS</th><th>Description</th></tr>
+    <tr><td>Fond de page</td><td><code>body</code></td><td>Arrière-plan général</td></tr>
+    <tr><td>Conteneur principal</td><td><code>.container</code></td><td>Boîte centrale du jeu</td></tr>
+    <tr><td>Titre du jeu</td><td><code>h1</code></td><td>"🎸 ROCK STAR CAREER 🎸"</td></tr>
+    <tr><td>Sous-titres de vue</td><td><code>h2</code></td><td>Ex: "🎤 Concerts", "💿 Albums"</td></tr>
+    <tr><td>En-tête joueur</td><td><code>.header-info</code></td><td>Barre avec nom, santé, argent</td></tr>
+    <tr><td>Nom du joueur</td><td><code>.player-name</code></td><td>Grand nom affiché en haut</td></tr>
+    <tr><td>Zone de navigation</td><td><code>.sidebar</code></td><td>Menu de gauche</td></tr>
+    <tr><td>Boutons sidebar</td><td><code>.sidebar button</code></td><td>Boutons de navigation</td></tr>
+    <tr><td>Bouton actif sidebar</td><td><code>.sidebar button.active</code></td><td>Vue actuellement affichée</td></tr>
+    <tr><td>Zone de contenu</td><td><code>.content-area</code></td><td>Panneau principal droit</td></tr>
+    <tr><td>Tous les boutons</td><td><code>button:not(:disabled)</code></td><td>Boutons cliquables</td></tr>
+    <tr><td>Boutons au survol</td><td><code>button:hover:not(:disabled)</code></td><td>Effet hover</td></tr>
+    <tr><td>Barre de santé (fond)</td><td><code>.health-bar</code></td><td>Conteneur de la barre</td></tr>
+    <tr><td>Barre santé bonne</td><td><code>.health-fill.health-good</code></td><td>Santé &gt; 60%</td></tr>
+    <tr><td>Barre santé moyenne</td><td><code>.health-fill.health-medium</code></td><td>Santé 30–60%</td></tr>
+    <tr><td>Barre santé critique</td><td><code>.health-fill.health-bad</code></td><td>Santé &lt; 30%</td></tr>
+    <tr><td>Items de boutique</td><td><code>.shop-item</code></td><td>Cartes d'équipement</td></tr>
+    <tr><td>Item possédé</td><td><code>.shop-item.owned</code></td><td>Équipement acheté</td></tr>
+    <tr><td>Résultat concert</td><td><code>.concert-result</code></td><td>Panneau après concert</td></tr>
+    <tr><td>Notifications toast</td><td><code>.toast</code></td><td>Notifications en haut à droite</td></tr>
+    <tr><td>Carte achievement</td><td><code>.achievement-card</code></td><td>Carte de succès</td></tr>
+    <tr><td>Achievement débloqué</td><td><code>.achievement-done</code></td><td>Achievement obtenu</td></tr>
+    <tr><td>Carte de lieu</td><td><code>.venue-card</code></td><td>Lieu de concert</td></tr>
+    <tr><td>Texte positif</td><td><code>.positive</code></td><td>Gains (vert)</td></tr>
+    <tr><td>Texte négatif</td><td><code>.negative</code></td><td>Pertes (rouge)</td></tr>
+    <tr><td>Grille boutique</td><td><code>.shop-grid</code></td><td>Grille d'items</td></tr>
+    <tr><td>Séparateur sidebar</td><td><code>.sidebar-divider</code></td><td>Ligne de séparation</td></tr>
+  </table>
+
+  <!-- VARIABLES -->
+  <h2 id="variables">4. Variables et valeurs de référence</h2>
+  <p>Le jeu utilise ces couleurs par défaut (thème rouge/métal). Garde-les en tête pour créer des thèmes cohérents :</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>🔴 Palette rouge (défaut)</h4>
+      <p>
+        Rouge vif : <code>#ff0000</code><br>
+        Rouge sombre : <code>#8b0000</code><br>
+        Rouge moyen : <code>#cc0000</code><br>
+        Rouge clair : <code>#ff6b6b</code><br>
+        Fond sombre : <code>#1a1a1a</code><br>
+        Fond très sombre : <code>#0d0d0d</code>
+      </p>
+    </div>
+    <div class="card">
+      <h4>✨ Effets lumineux</h4>
+      <p>
+        Lueur rouge : <code>text-shadow: 0 0 10px #ff0000</code><br>
+        Box-shadow : <code>0 0 30px rgba(139,0,0,0.5)</code><br>
+        Fond semi-transparent : <code>rgba(139,0,0,0.2)</code><br>
+        Police : <code>'Courier New', monospace</code>
+      </p>
+    </div>
+  </div>
+
+  <h3>Propriétés CSS utiles à surcharger</h3>
+  <table>
+    <tr><th>Propriété</th><th>Usage typique</th></tr>
+    <tr><td><code>background</code> / <code>background-color</code></td><td>Couleur/dégradé de fond</td></tr>
+    <tr><td><code>border-color</code></td><td>Couleur des bordures</td></tr>
+    <tr><td><code>box-shadow</code></td><td>Lueurs et ombres autour des éléments</td></tr>
+    <tr><td><code>color</code></td><td>Couleur du texte</td></tr>
+    <tr><td><code>text-shadow</code></td><td>Lueur autour du texte</td></tr>
+    <tr><td><code>border-radius</code></td><td>Arrondi des coins</td></tr>
+    <tr><td><code>font-family</code></td><td>Police de caractères</td></tr>
+    <tr><td><code>opacity</code></td><td>Transparence d'un élément</td></tr>
+  </table>
+
+  <!-- EXAMPLES -->
+  <h2 id="examples">5. Exemples complets</h2>
+
+  <h3>Exemple 1 : Thème Espace (Violet Galaxie) <span class="badge badge-easy">Facile</span></h3>
+<pre><span class="comment">/* =============================================
+   Galactic Space Theme — Rock Star Career
+   Auteur : TonNom | Version : 1.0
+   ============================================= */</span>
+
+<span class="selector">body</span> {
+    <span class="property">background</span>: <span class="value">linear-gradient(135deg, #04001a 0%, #0a0030 50%, #010010 100%) !important</span>;
+}
+
+<span class="selector">.container</span> {
+    <span class="property">border-color</span>: <span class="value">#3300aa !important</span>;
+    <span class="property">box-shadow</span>: <span class="value">0 0 50px rgba(80, 0, 200, 0.5), 0 0 100px rgba(80, 0, 200, 0.2) !important</span>;
+}
+
+<span class="selector">h1</span> {
+    <span class="property">color</span>: <span class="value">#aa88ff !important</span>;
+    <span class="property">text-shadow</span>: <span class="value">0 0 20px #8844ff, 0 0 40px #4400cc, 0 0 60px #220088 !important</span>;
+}
+
+<span class="selector">button:not(:disabled)</span> {
+    <span class="property">background</span>: <span class="value">linear-gradient(135deg, #1a0055 0%, #5500bb 100%) !important</span>;
+    <span class="property">border-color</span>: <span class="value">#7722ff !important</span>;
+}
+
+<span class="selector">button:hover:not(:disabled)</span> {
+    <span class="property">box-shadow</span>: <span class="value">0 5px 25px rgba(120, 50, 255, 0.7) !important</span>;
+}
+
+<span class="selector">.sidebar</span> {
+    <span class="property">background</span>: <span class="value">rgba(5, 0, 30, 0.9) !important</span>;
+    <span class="property">border-color</span>: <span class="value">#220077 !important</span>;
+}
+
+<span class="selector">.sidebar button</span> {
+    <span class="property">background</span>: <span class="value">linear-gradient(135deg, #0f0033 0%, #330088 100%) !important</span>;
+    <span class="property">border-color</span>: <span class="value">#5500aa !important</span>;
+}
+
+<span class="selector">.health-fill.health-good</span> {
+    <span class="property">background</span>: <span class="value">linear-gradient(90deg, #2200aa, #9966ff) !important</span>;
+}
+
+<span class="selector">.player-name</span> {
+    <span class="property">color</span>: <span class="value">#cc99ff !important</span>;
+    <span class="property">text-shadow</span>: <span class="value">0 0 12px #9955ff !important</span>;
+}
+
+<span class="selector">.toast</span> {
+    <span class="property">border-color</span>: <span class="value">#6633cc !important</span>;
+    <span class="property">box-shadow</span>: <span class="value">0 0 20px rgba(100, 50, 200, 0.6) !important</span>;
+}</pre>
+
+  <h3>Exemple 2 : Thème Rétro Arcade <span class="badge badge-med">Intermédiaire</span></h3>
+<pre><span class="comment">/* =============================================
+   Retro Arcade Theme
+   ============================================= */</span>
+
+<span class="selector">@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap')</span>;
+
+<span class="selector">body</span> {
+    <span class="property">background</span>: <span class="value">#000000 !important</span>;
+    <span class="property">background-image</span>: <span class="value">repeating-linear-gradient(
+        0deg,
+        rgba(0,255,0,0.03) 0px,
+        rgba(0,255,0,0.03) 1px,
+        transparent 1px,
+        transparent 4px
+    ) !important</span>;
+}
+
+<span class="selector">body, button, input, select, textarea</span> {
+    <span class="property">font-family</span>: <span class="value">'Press Start 2P', monospace !important</span>;
+}
+
+<span class="selector">h1</span> {
+    <span class="property">color</span>: <span class="value">#00ff00 !important</span>;
+    <span class="property">text-shadow</span>: <span class="value">0 0 10px #00ff00, 3px 3px 0 #005500 !important</span>;
+    <span class="property">font-size</span>: <span class="value">1.8em !important</span>;
+}
+
+<span class="selector">.container</span> {
+    <span class="property">border-color</span>: <span class="value">#00ff00 !important</span>;
+    <span class="property">border-width</span>: <span class="value">4px !important</span>;
+    <span class="property">border-radius</span>: <span class="value">0px !important</span>;
+    <span class="property">box-shadow</span>: <span class="value">0 0 30px rgba(0,255,0,0.4), inset 0 0 30px rgba(0,50,0,0.3) !important</span>;
+}
+
+<span class="selector">button:not(:disabled)</span> {
+    <span class="property">background</span>: <span class="value">#001100 !important</span>;
+    <span class="property">border</span>: <span class="value">3px solid #00ff00 !important</span>;
+    <span class="property">color</span>: <span class="value">#00ff00 !important</span>;
+    <span class="property">border-radius</span>: <span class="value">0 !important</span>;
+    <span class="property">text-shadow</span>: <span class="value">0 0 8px #00ff00 !important</span>;
+}
+
+<span class="selector">.health-fill.health-good</span> {
+    <span class="property">background</span>: <span class="value">#00ff00 !important</span>;
+}
+<span class="selector">.health-fill.health-medium</span> {
+    <span class="property">background</span>: <span class="value">#ffff00 !important</span>;
+}
+<span class="selector">.health-fill.health-bad</span> {
+    <span class="property">background</span>: <span class="value">#ff0000 !important</span>;
+}</pre>
+
+  <h3>Exemple 3 : Animation pulsante sur le titre <span class="badge badge-adv">Avancé</span></h3>
+<pre><span class="comment">/* Ajoute une animation de pulsation au titre */</span>
+
+<span class="selector">@keyframes rsc-pulse</span> {
+    <span class="value">0%, 100%</span> { <span class="property">text-shadow</span>: <span class="value">0 0 10px #ff0000, 0 0 20px #ff0000</span>; }
+    <span class="value">50%</span>       { <span class="property">text-shadow</span>: <span class="value">0 0 25px #ff6600, 0 0 50px #ff0000, 0 0 80px #880000</span>; }
+}
+
+<span class="selector">@keyframes rsc-border-glow</span> {
+    <span class="value">0%, 100%</span> { <span class="property">box-shadow</span>: <span class="value">0 0 20px rgba(139,0,0,0.5)</span>; }
+    <span class="value">50%</span>       { <span class="property">box-shadow</span>: <span class="value">0 0 60px rgba(255,0,0,0.8), 0 0 100px rgba(139,0,0,0.4)</span>; }
+}
+
+<span class="selector">h1</span> {
+    <span class="property">animation</span>: <span class="value">rsc-pulse 2.5s ease-in-out infinite !important</span>;
+}
+
+<span class="selector">.container</span> {
+    <span class="property">animation</span>: <span class="value">rsc-border-glow 3s ease-in-out infinite !important</span>;
+}
+
+<span class="comment">/* Boutons avec effet scintillement */</span>
+<span class="selector">@keyframes rsc-shimmer</span> {
+    <span class="value">0%</span>   { <span class="property">background-position</span>: <span class="value">-200% center</span>; }
+    <span class="value">100%</span> { <span class="property">background-position</span>: <span class="value">200% center</span>; }
+}
+
+<span class="selector">button:hover:not(:disabled)</span> {
+    <span class="property">background</span>: <span class="value">linear-gradient(90deg, #8b0000 0%, #ff0000 40%, #ff6600 50%, #ff0000 60%, #8b0000 100%) !important</span>;
+    <span class="property">background-size</span>: <span class="value">200% auto !important</span>;
+    <span class="property">animation</span>: <span class="value">rsc-shimmer 1.5s linear infinite !important</span>;
+}</pre>
+
+  <!-- API -->
+  <h2 id="api">6. API JavaScript (RSC_MOD)</h2>
+  <p>Si tu crées un <strong>mod .js</strong> qui inclut aussi des textures, tu peux utiliser ces méthodes :</p>
+
+  <table>
+    <tr><th>Méthode</th><th>Description</th><th>Paramètres</th></tr>
+    <tr>
+      <td><code>RSC_MOD.loadTexturePack(name, css)</code></td>
+      <td>Charge (ou met à jour) un texture pack</td>
+      <td><code>name</code> : string, <code>css</code> : string CSS</td>
+    </tr>
+    <tr>
+      <td><code>RSC_MOD.removeTexturePack(name)</code></td>
+      <td>Supprime un texture pack par son nom</td>
+      <td><code>name</code> : string</td>
+    </tr>
+    <tr>
+      <td><code>RSC_MOD.resetTextures()</code></td>
+      <td>Supprime tous les texture packs chargés</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><code>RSC_MOD.listTexturePacks()</code></td>
+      <td>Retourne la liste des packs actifs</td>
+      <td>— (retourne un tableau)</td>
+    </tr>
+  </table>
+
+  <h3>Exemple : Mod JS qui inclut un texture pack</h3>
+<pre><span class="comment">// monMod.js — Mod avec texture intégrée</span>
+
+RSC_MOD._register({ name: <span class="string">'Mon Super Mod'</span>, version: <span class="string">'1.0'</span>, author: <span class="string">'TonNom'</span> });
+
+<span class="comment">// Le mod fait ses trucs habituels...</span>
+RSC_MOD.addGroup({ name: <span class="string">'Cosmic Band'</span>, minPop: 500, bonus: 4, members: 5 });
+
+<span class="comment">// ...et applique aussi un texture pack assorti</span>
+RSC_MOD.loadTexturePack(<span class="string">'Cosmic Theme'</span>, <span class="string">`
+  body { background: #000010 !important; }
+  h1 { color: #aaeeff !important; }
+`</span>);</pre>
+
+  <!-- TIPS -->
+  <h2 id="tips">7. Bonnes pratiques</h2>
+
+  <div class="grid2">
+    <div>
+      <h3>✅ À faire</h3>
+      <ul style="margin-left:18px;">
+        <li>Toujours utiliser <code>!important</code></li>
+        <li>Nommer clairement ton pack</li>
+        <li>Utiliser le bouton <strong>Aperçu</strong> avant d'appliquer</li>
+        <li>Mettre un commentaire d'en-tête avec ton nom et version</li>
+        <li>Tester sur tous les onglets du jeu</li>
+        <li>Préfixer tes animations avec <code>rsc-</code> pour éviter les conflits</li>
+        <li>Cibler les sélecteurs précis plutôt que <code>*</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>❌ À éviter</h3>
+      <ul style="margin-left:18px;">
+        <li>Modifier <code>display</code> ou <code>position</code> des éléments UI critiques</li>
+        <li>Cacher des boutons avec <code>visibility: hidden</code></li>
+        <li>Utiliser des polices non disponibles hors ligne sans fallback</li>
+        <li>Des animations trop agressives (nausée et performance)</li>
+        <li>Oublier <code>!important</code> (le style ne s'appliquera pas)</li>
+        <li>Plusieurs packs qui modifient les mêmes propriétés (conflits)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>💡 Polices Google Fonts :</strong> Tu peux importer des polices avec <code>@import url('https://fonts.googleapis.com/...')</code> au début de ton CSS. Assure-toi que l'utilisateur a une connexion internet.
+  </div>
+
+  <div class="warn">
+    <strong>⚠️ Performance :</strong> Les animations <code>@keyframes</code> complexes sur de nombreux éléments peuvent ralentir le jeu. Limite les animations aux éléments statiques (titre, conteneur) et évite d'animer les éléments qui se mettent à jour souvent.
+  </div>
+
+  <!-- TROUBLESHOOT -->
+  <h2 id="troubleshoot">8. Dépannage</h2>
+
+  <table>
+    <tr><th>Problème</th><th>Cause probable</th><th>Solution</th></tr>
+    <tr>
+      <td>Le style ne s'applique pas</td>
+      <td>Manque de <code>!important</code></td>
+      <td>Ajoute <code>!important</code> à chaque propriété</td>
+    </tr>
+    <tr>
+      <td>Certains éléments ignorent le style</td>
+      <td>Sélecteur trop générique</td>
+      <td>Utilise des sélecteurs plus spécifiques ou <code>!important</code></td>
+    </tr>
+    <tr>
+      <td>La police ne change pas</td>
+      <td>Fallback manquant ou import absent</td>
+      <td>Assure-toi d'ajouter <code>!important</code> et un fallback : <code>font-family: 'MaPolice', monospace !important</code></td>
+    </tr>
+    <tr>
+      <td>Deux packs se conflictent</td>
+      <td>Propriétés identiques dans deux packs</td>
+      <td>Le dernier pack chargé gagne. Supprime l'un des packs via le bouton 🗑️</td>
+    </tr>
+    <tr>
+      <td>Le pack disparaît après rechargement</td>
+      <td>Le CSS n'est pas persisté</td>
+      <td>Normal : recharge ton fichier .css après avoir chargé une sauvegarde</td>
+    </tr>
+    <tr>
+      <td>Texte illisible après changement</td>
+      <td>Contraste insuffisant</td>
+      <td>Vérifie le contraste texte/fond. Utilise un vérificateur en ligne.</td>
+    </tr>
+    <tr>
+      <td>L'aperçu fonctionne mais pas l'application</td>
+      <td>Erreur de syntaxe CSS</td>
+      <td>Ouvre la console navigateur (F12) pour voir les erreurs de parsing</td>
+    </tr>
+  </table>
+
+  <h3>Inspecter les éléments du jeu</h3>
+  <p>Pour trouver exactement quel sélecteur CSS cibler :</p>
+  <ol style="margin-left:20px; margin-bottom:14px;">
+    <li>Appuie sur <strong>F12</strong> pour ouvrir les DevTools</li>
+    <li>Clique sur l'outil <strong>Inspect</strong> (la flèche)</li>
+    <li>Clique sur l'élément que tu veux modifier dans le jeu</li>
+    <li>Dans le panneau "Styles", tu vois tous les CSS appliqués</li>
+    <li>Copie la classe CSS et adapte-la dans ton texture pack</li>
+  </ol>
+
+  <footer>
+    Rock Star Career — Documentation Texture Packs v1.0<br>
+    Système de textures intégré au Mod Loader RSC_MOD v1.0.0
+  </footer>
+
+</div>
+</body>
+</html>

@@ -227,7 +227,323 @@ const RSC_MOD = (() => {
 // Patch de updateCooldowns pour exécuter les _modTicks
 const _origUpdateCooldowns = typeof updateCooldowns === 'function' ? updateCooldowns : null;
 
-// ─── VUE MOD LOADER ─────────────────────────────────────────
+// ============================================================
+// SYSTÈME DE TEXTURES CSS
+// ============================================================
+// Registre des texture packs chargés
+const _loadedTexturePacks = [];
+
+/** Applique un CSS de texture au jeu */
+function applyTextureCss(css, packName) {
+    const styleEl = document.getElementById('rsc-texture-style');
+    if (!styleEl) { console.error('[TEXTURE] Balise #rsc-texture-style introuvable.'); return false; }
+    styleEl.textContent += '\n/* === ' + packName + ' === */\n' + css;
+    return true;
+}
+
+/** Supprime toutes les textures d'un pack donné (par nom) */
+function removeTexturePack(packName) {
+    const idx = _loadedTexturePacks.findIndex(p => p.name === packName);
+    if (idx === -1) return false;
+    _loadedTexturePacks.splice(idx, 1);
+    rebuildTextureStyle();
+    return true;
+}
+
+/** Reconstruit la balise style à partir du registre */
+function rebuildTextureStyle() {
+    const styleEl = document.getElementById('rsc-texture-style');
+    if (!styleEl) return;
+    styleEl.textContent = _loadedTexturePacks
+        .map(p => '/* === ' + p.name + ' === */\n' + p.css)
+        .join('\n\n');
+}
+
+/** Réinitialise toutes les textures */
+function resetAllTextures() {
+    _loadedTexturePacks.length = 0;
+    const styleEl = document.getElementById('rsc-texture-style');
+    if (styleEl) styleEl.textContent = '';
+}
+
+// Expose dans RSC_MOD
+Object.assign(RSC_MOD, {
+    /** Charge un texture pack CSS
+     *  @param {string} name  - nom du pack (pour les logs et la suppression)
+     *  @param {string} css   - contenu CSS complet
+     */
+    loadTexturePack(name, css) {
+        if (_loadedTexturePacks.some(p => p.name === name)) {
+            // Mise à jour si le pack existe déjà
+            const p = _loadedTexturePacks.find(p => p.name === name);
+            p.css = css;
+            rebuildTextureStyle();
+        } else {
+            _loadedTexturePacks.push({ name, css, loadedAt: new Date().toLocaleTimeString() });
+            applyTextureCss(css, name);
+        }
+        RSC_MOD.toast(`🎨 Texture Pack "${name}" appliqué !`, 3000);
+    },
+
+    /** Supprime un texture pack par son nom */
+    removeTexturePack(name) {
+        if (removeTexturePack(name)) RSC_MOD.toast(`🗑️ Texture Pack "${name}" supprimé.`);
+        else throw new Error(`Texture Pack "${name}" introuvable.`);
+    },
+
+    /** Réinitialise toutes les textures */
+    resetTextures() {
+        resetAllTextures();
+        RSC_MOD.toast('🔄 Toutes les textures réinitialisées.', 2500);
+    },
+
+    /** Liste les texture packs chargés */
+    listTexturePacks() {
+        return [..._loadedTexturePacks];
+    }
+});
+
+// ─── VUE TEXTURE LOADER ──────────────────────────────────────
+
+function showTextureView(content) {
+    const loaded = _loadedTexturePacks;
+
+    content.innerHTML = `
+        <h2 style="color:#ffcc00; margin-bottom:5px;">🎨 Texture Loader</h2>
+        <p style="color:#888; font-size:0.85em; margin-bottom:20px;">
+            Importe des fichiers <code style="color:#ffaa00;">.css</code> pour personnaliser l'apparence du jeu.
+            <a href="TEXTURE_DOCUMENTATION.html" target="_blank" style="color:#ffcc00;">📄 Documentation textures</a>
+        </p>
+
+        <!-- Zone d'import fichier -->
+        <div style="background:rgba(0,0,0,0.5); border:2px dashed #cc7700; border-radius:8px; padding:25px; text-align:center; margin-bottom:20px;"
+             id="textureDropZone"
+             ondragover="event.preventDefault(); this.style.borderColor='#ffcc00';"
+             ondragleave="this.style.borderColor='#cc7700';"
+             ondrop="handleTextureDrop(event)">
+            <div style="font-size:2.5em; margin-bottom:10px;">🎨</div>
+            <p style="color:#ffaa00; margin-bottom:12px;">Glisse-dépose un fichier <strong>.css</strong> ici</p>
+            <p style="color:#555; font-size:0.8em; margin-bottom:14px;">— ou —</p>
+            <label style="cursor:pointer; background:linear-gradient(135deg,#3a1a00,#8a4400); border:1px solid #cc7700; color:#fff; padding:10px 20px; border-radius:6px; font-family:Courier New; font-weight:bold; font-size:13px; text-transform:uppercase; letter-spacing:1px;">
+                📂 Choisir un fichier .css
+                <input type="file" accept=".css" style="display:none;" onchange="loadTextureFile(this.files[0])">
+            </label>
+        </div>
+
+        <!-- Nom du pack -->
+        <div style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
+            <label style="color:#ffaa00; font-size:0.9em; white-space:nowrap;">Nom du pack :</label>
+            <input type="text" id="texturePackName" placeholder="Mon Texture Pack" value="Texture Pack ${loaded.length + 1}"
+                style="flex:1; background:#0d0d0d; border:2px solid #5a2a00; color:#fff; padding:8px 12px; border-radius:6px; font-family:Courier New; font-size:13px;">
+        </div>
+
+        <!-- Éditeur CSS direct -->
+        <div style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h3 style="color:#ffaa00;">✏️ Éditeur CSS direct</h3>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="clearTextureEditor()" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#333,#555); border-color:#666;">🗑️ Vider</button>
+                    <button onclick="previewTextureCss()" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#003a1a,#007733); border-color:#00aa55;">👁️ Aperçu</button>
+                    <button onclick="applyTextureFromEditor()" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#3a2200,#996600); border-color:#ffaa00;">✅ Appliquer</button>
+                </div>
+            </div>
+            <textarea id="textureCssEditor"
+                placeholder="/* Exemple de texture pack */\nbody {\n    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2d 100%) !important;\n}\n.container {\n    border-color: #6600cc !important;\n    box-shadow: 0 0 40px rgba(102, 0, 204, 0.6) !important;\n}\nh1 {\n    color: #cc66ff !important;\n    text-shadow: 0 0 15px #cc66ff !important;\n}"
+                style="width:100%; height:220px; background:#0d0d0d; border:2px solid #5a2a00; color:#e0e0e0; font-family:'Courier New',monospace; font-size:13px; padding:14px; border-radius:6px; resize:vertical; box-sizing:border-box; outline:none; line-height:1.6;"
+                spellcheck="false"
+                onkeydown="handleEditorTab(event)"></textarea>
+        </div>
+
+        <!-- Texture packs chargés -->
+        <div style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color:#ffaa00;">🖼️ Texture Packs actifs (${loaded.length})</h3>
+                ${loaded.length > 0 ? `<button onclick="resetAllTextures(); showView('textures');" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#3a0000,#880000); border-color:#ff4444;">🔄 Tout réinitialiser</button>` : ''}
+            </div>
+            ${loaded.length === 0
+                ? '<p style="color:#555; font-style:italic;">Aucun texture pack chargé.</p>'
+                : loaded.map((p, i) => `
+                    <div style="background:rgba(60,30,0,0.4); border:1px solid #cc7700; border-radius:6px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="color:#ffcc00; font-weight:bold;">🎨 ${p.name}</span>
+                            <span style="color:#888; font-size:0.8em; margin-left:8px;">${p.css.length} caractères CSS</span>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <span style="color:#555; font-size:0.75em;">chargé à ${p.loadedAt}</span>
+                            <button onclick="removeTexturePack('${p.name}'); showView('textures');" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3a0000,#880000); border-color:#ff4444; margin:0;">🗑️</button>
+                        </div>
+                    </div>`).join('')
+            }
+        </div>
+
+        <!-- Presets intégrés -->
+        <div style="margin-bottom:20px;">
+            <h3 style="color:#ffaa00; margin-bottom:12px;">✨ Presets rapides</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
+                ${[
+                    { name: 'Neon Purple', emoji: '💜', desc: 'Thème violet néon', fn: 'loadPresetTexture("neon_purple")' },
+                    { name: 'Ocean Blue', emoji: '🌊', desc: 'Thème bleu profond', fn: 'loadPresetTexture("ocean_blue")' },
+                    { name: 'Forest Dark', emoji: '🌿', desc: 'Thème vert sombre', fn: 'loadPresetTexture("forest_dark")' },
+                    { name: 'Gold Rush', emoji: '✨', desc: 'Thème or et noir', fn: 'loadPresetTexture("gold_rush")' },
+                    { name: 'Default (Rouge)', emoji: '🔴', desc: 'Thème d\'origine', fn: 'resetAllTextures(); showView("textures");' }
+                ].map(p => `
+                    <div style="background:rgba(0,0,0,0.4); border:1px solid #5a2a00; border-radius:8px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s;"
+                         onmouseenter="this.style.borderColor='#ffcc00'" onmouseleave="this.style.borderColor='#5a2a00'"
+                         onclick="${p.fn}">
+                        <div style="font-size:1.8em; margin-bottom:6px;">${p.emoji}</div>
+                        <div style="color:#ffcc00; font-weight:bold; font-size:0.9em;">${p.name}</div>
+                        <div style="color:#888; font-size:0.75em; margin-top:4px;">${p.desc}</div>
+                    </div>`).join('')}
+            </div>
+        </div>
+
+        <div id="textureLog"></div>
+    `;
+}
+
+// ─── Fonctions utilitaires de la vue texture ─────────────────
+
+function handleTextureDrop(event) {
+    event.preventDefault();
+    document.getElementById('textureDropZone').style.borderColor = '#cc7700';
+    const file = event.dataTransfer.files[0];
+    if (file && file.name.endsWith('.css')) {
+        loadTextureFile(file);
+    } else {
+        showTextureError('Fichier invalide. Seuls les fichiers .css sont acceptés.');
+    }
+}
+
+function loadTextureFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('textureCssEditor').value = e.target.result;
+        // Pré-remplir le nom avec le nom du fichier
+        const nameInput = document.getElementById('texturePackName');
+        if (nameInput) nameInput.value = file.name.replace('.css', '');
+        showToast(`📂 Fichier "${file.name}" chargé dans l'éditeur. Clique sur Appliquer !`, 3500);
+    };
+    reader.readAsText(file);
+}
+
+function clearTextureEditor() {
+    const el = document.getElementById('textureCssEditor');
+    if (el) el.value = '';
+}
+
+function previewTextureCss() {
+    const css = document.getElementById('textureCssEditor')?.value?.trim();
+    if (!css) { showTextureError('Éditeur vide, rien à prévisualiser.'); return; }
+    // Aperçu temporaire (5 secondes puis revert)
+    const styleEl = document.getElementById('rsc-texture-style');
+    const backup = styleEl ? styleEl.textContent : '';
+    if (styleEl) styleEl.textContent = backup + '\n/* PREVIEW */\n' + css;
+    showToast('👁️ Aperçu actif 5 secondes...', 5000);
+    setTimeout(() => {
+        if (styleEl) styleEl.textContent = backup;
+        showToast('👁️ Aperçu terminé.', 2000);
+    }, 5000);
+}
+
+function applyTextureFromEditor() {
+    const css = document.getElementById('textureCssEditor')?.value?.trim();
+    const name = document.getElementById('texturePackName')?.value?.trim() || ('Pack ' + (_loadedTexturePacks.length + 1));
+    if (!css) { showTextureError('Éditeur CSS vide, rien à appliquer.'); return; }
+    RSC_MOD.loadTexturePack(name, css);
+    showView('textures');
+}
+
+function showTextureError(msg) {
+    const log = document.getElementById('textureLog');
+    if (!log) return;
+    log.innerHTML = `
+        <div style="background:rgba(100,50,0,0.4); border:2px solid #ffaa00; border-radius:6px; padding:14px; color:#ffcc00;">
+            <strong>⚠️ Erreur :</strong> ${msg}
+        </div>`;
+}
+
+// ─── Presets intégrés ────────────────────────────────────────
+
+const _texturePresets = {
+    neon_purple: `
+/* === Neon Purple Texture Pack === */
+body { background: linear-gradient(135deg, #0a0014 0%, #1a0030 100%) !important; }
+.container { border-color: #7700cc !important; box-shadow: 0 0 40px rgba(119,0,204,0.6) !important; }
+h1 { color: #cc66ff !important; text-shadow: 0 0 15px #cc66ff, 0 0 30px #9900ff !important; }
+button:not(:disabled) { background: linear-gradient(135deg, #4a0088 0%, #9900cc 100%) !important; }
+button:hover:not(:disabled) { box-shadow: 0 5px 20px rgba(153,0,204,0.6) !important; }
+.content-area { background: rgba(80,0,150,0.15) !important; border-color: #7700cc !important; }
+.header-info { background: rgba(80,0,150,0.3) !important; border-color: #7700cc !important; }
+.sidebar { background: rgba(20,0,40,0.8) !important; border-color: #5500aa !important; }
+.sidebar button { background: linear-gradient(135deg, #2a005a 0%, #5a0099 100%) !important; border-color: #8800cc !important; }
+.sidebar button:hover { background: linear-gradient(135deg, #3a0077 0%, #7700bb !important); box-shadow: 3px 0 12px rgba(150,0,255,0.4) !important; }
+.health-good { background: linear-gradient(90deg, #5500aa, #cc66ff) !important; }
+.shop-item { border-color: #5500aa !important; }
+.toast { border-color: #9900cc !important; box-shadow: 0 0 20px rgba(153,0,204,0.5) !important; }
+`,
+    ocean_blue: `
+/* === Ocean Blue Texture Pack === */
+body { background: linear-gradient(135deg, #000d1a 0%, #001a33 100%) !important; }
+.container { border-color: #004488 !important; box-shadow: 0 0 40px rgba(0,68,136,0.7) !important; }
+h1 { color: #00aaff !important; text-shadow: 0 0 15px #00aaff, 0 0 30px #0055cc !important; }
+button:not(:disabled) { background: linear-gradient(135deg, #002244 0%, #0055aa 100%) !important; }
+button:hover:not(:disabled) { box-shadow: 0 5px 20px rgba(0,85,170,0.6) !important; }
+.content-area { background: rgba(0,50,100,0.2) !important; border-color: #004488 !important; }
+.header-info { background: rgba(0,50,100,0.35) !important; border-color: #004488 !important; }
+.sidebar { background: rgba(0,10,30,0.85) !important; border-color: #003366 !important; }
+.sidebar button { background: linear-gradient(135deg, #001a44 0%, #003388 100%) !important; border-color: #0055bb !important; }
+.sidebar button:hover { background: linear-gradient(135deg, #002255 0%, #0066cc 100%) !important; box-shadow: 3px 0 12px rgba(0,100,200,0.4) !important; }
+.health-good { background: linear-gradient(90deg, #0044aa, #00ccff) !important; }
+.shop-item { border-color: #003388 !important; }
+.toast { border-color: #0055aa !important; box-shadow: 0 0 20px rgba(0,85,170,0.5) !important; }
+.player-name { color: #00aaff !important; text-shadow: 0 0 10px #00aaff !important; }
+`,
+    forest_dark: `
+/* === Forest Dark Texture Pack === */
+body { background: linear-gradient(135deg, #050d00 0%, #0a1a05 100%) !important; }
+.container { border-color: #1a5500 !important; box-shadow: 0 0 40px rgba(26,85,0,0.7) !important; }
+h1 { color: #44cc00 !important; text-shadow: 0 0 15px #44cc00, 0 0 30px #226600 !important; }
+button:not(:disabled) { background: linear-gradient(135deg, #0d2200 0%, #226600 100%) !important; }
+button:hover:not(:disabled) { box-shadow: 0 5px 20px rgba(34,102,0,0.6) !important; }
+.content-area { background: rgba(20,60,0,0.2) !important; border-color: #1a5500 !important; }
+.header-info { background: rgba(20,60,0,0.35) !important; border-color: #1a5500 !important; }
+.sidebar { background: rgba(5,15,0,0.85) !important; border-color: #124400 !important; }
+.sidebar button { background: linear-gradient(135deg, #0a1a00 0%, #1a4400 100%) !important; border-color: #2a6600 !important; }
+.sidebar button:hover { background: linear-gradient(135deg, #122200 0%, #2a5500 100%) !important; box-shadow: 3px 0 12px rgba(40,100,0,0.4) !important; }
+.health-good { background: linear-gradient(90deg, #1a5500, #66ff00) !important; }
+.shop-item { border-color: #1a5500 !important; }
+.toast { border-color: #2a7700 !important; box-shadow: 0 0 20px rgba(40,100,0,0.5) !important; }
+.player-name { color: #55ee00 !important; text-shadow: 0 0 10px #55ee00 !important; }
+`,
+    gold_rush: `
+/* === Gold Rush Texture Pack === */
+body { background: linear-gradient(135deg, #0d0800 0%, #1a1000 100%) !important; }
+.container { border-color: #8b6914 !important; box-shadow: 0 0 40px rgba(139,105,20,0.7) !important; }
+h1 { color: #ffd700 !important; text-shadow: 0 0 15px #ffd700, 0 0 30px #cc9900 !important; }
+button:not(:disabled) { background: linear-gradient(135deg, #3a2800 0%, #886600 100%) !important; }
+button:hover:not(:disabled) { box-shadow: 0 5px 20px rgba(200,150,0,0.6) !important; }
+.content-area { background: rgba(80,55,0,0.15) !important; border-color: #8b6914 !important; }
+.header-info { background: rgba(80,55,0,0.3) !important; border-color: #8b6914 !important; }
+.sidebar { background: rgba(20,12,0,0.85) !important; border-color: #664d00 !important; }
+.sidebar button { background: linear-gradient(135deg, #2a1a00 0%, #664400 100%) !important; border-color: #aa7700 !important; }
+.sidebar button:hover { background: linear-gradient(135deg, #3a2500 0%, #886600 100%) !important; box-shadow: 3px 0 12px rgba(180,130,0,0.4) !important; }
+.health-good { background: linear-gradient(90deg, #886600, #ffd700) !important; }
+.shop-item { border-color: #664400 !important; }
+.toast { border-color: #aa8800 !important; box-shadow: 0 0 20px rgba(170,136,0,0.5) !important; }
+.player-name { color: #ffd700 !important; text-shadow: 0 0 10px #ffd700 !important; }
+`
+};
+
+function loadPresetTexture(presetId) {
+    const css = _texturePresets[presetId];
+    if (!css) { showToast('❌ Preset introuvable.', 2000); return; }
+    const names = { neon_purple: 'Neon Purple', ocean_blue: 'Ocean Blue', forest_dark: 'Forest Dark', gold_rush: 'Gold Rush' };
+    RSC_MOD.loadTexturePack(names[presetId] || presetId, css);
+    showView('textures');
+}
+
+
 
 function showModView(content) {
     const loaded = RSC_MOD.listMods();

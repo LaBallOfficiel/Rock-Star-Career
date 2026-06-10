@@ -77,6 +77,7 @@
                     <button onclick="showView('history')" id="btn-history">📜 Historique</button>
                     <div class="sidebar-divider"></div>
                     <button onclick="showView('mods')" id="btn-mods">🔧 Mods</button>
+                    <button onclick="showView('textures')" id="btn-textures">🎨 Textures</button>
                     <div class="sidebar-divider"></div>
                     <button onclick="saveGame()" class="btn-save">💾 Sauvegarder</button>
                 </div>
@@ -97,5 +98,7 @@
     <script src="social.js"></script>
     <script src="mod_loader.js"></script>
     <script src="views.js"></script>
+    <!-- Texture injector : balise <style> dédiée aux texture mods -->
+    <style id="rsc-texture-style"></style>
 </body>
 </html>

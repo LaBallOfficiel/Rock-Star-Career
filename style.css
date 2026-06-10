@@ -477,6 +477,25 @@ button:disabled {
     box-shadow: 0 0 12px rgba(200,200,0,0.4);
 }
 
+.sidebar button#btn-textures {
+    background: linear-gradient(135deg, #1a0a00 0%, #4a2800 100%);
+    border-color: #cc7700;
+    font-size: 12px;
+    padding: 9px 12px;
+}
+
+.sidebar button#btn-textures:hover {
+    background: linear-gradient(135deg, #2a1500 0%, #885500 100%);
+    border-color: #ffaa00;
+    box-shadow: 3px 0 12px rgba(255, 180, 0, 0.3);
+}
+
+.sidebar button#btn-textures.active {
+    background: linear-gradient(135deg, #4a2200 0%, #cc7700 100%);
+    border-color: #ffcc00;
+    box-shadow: 0 0 12px rgba(255,200,0,0.45);
+}
+
 #modCodeEditor:focus {
     border-color: #8b0000;
     box-shadow: 0 0 10px rgba(139,0,0,0.4);
