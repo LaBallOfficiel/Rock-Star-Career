@@ -216,9 +216,23 @@ const RSC_MOD = (() => {
         // ── Registre interne ─────────────────────────────
 
         _register(meta) {
-            loadedMods.push({ ...meta, loadedAt: new Date().toLocaleTimeString() });
+            loadedMods.push({ ...meta, loadedAt: new Date().toLocaleTimeString(), _id: loadedMods.length });
             log(meta.name, `v${meta.version || '?'} chargé avec succès ✓`, 'success');
             if (typeof showToast === 'function') showToast(`📦 Mod chargé : ${meta.name} v${meta.version || '?'}`, 3000);
+        },
+
+        /** Désactive un mod (le retire des hooks sans le supprimer) */
+        toggleMod(idx) {
+            if (_disabledMods.has(idx)) _disabledMods.delete(idx);
+            else _disabledMods.add(idx);
+            if (typeof showView === 'function') showView('mods');
+        },
+
+        /** Supprime un mod par index */
+        deleteMod(idx) {
+            loadedMods.splice(idx, 1);
+            _disabledMods.delete(idx);
+            if (typeof showView === 'function') showView('mods');
         }
     };
 })();
@@ -232,6 +246,8 @@ const _origUpdateCooldowns = typeof updateCooldowns === 'function' ? updateCoold
 // ============================================================
 // Registre des texture packs chargés
 const _loadedTexturePacks = [];
+// Registre des mods désactivés (par index dans loadedMods)
+const _disabledMods = new Set();
 
 /** Applique un CSS de texture au jeu */
 function applyTextureCss(css, packName) {
@@ -250,14 +266,7 @@ function removeTexturePack(packName) {
     return true;
 }
 
-/** Reconstruit la balise style à partir du registre */
-function rebuildTextureStyle() {
-    const styleEl = document.getElementById('rsc-texture-style');
-    if (!styleEl) return;
-    styleEl.textContent = _loadedTexturePacks
-        .map(p => '/* === ' + p.name + ' === */\n' + p.css)
-        .join('\n\n');
-}
+
 
 /** Réinitialise toutes les textures */
 function resetAllTextures() {
@@ -309,22 +318,22 @@ function showTextureView(content) {
     const loaded = _loadedTexturePacks;
 
     content.innerHTML = `
-        <h2 style="color:#ffcc00; margin-bottom:5px;">🎨 Texture Loader</h2>
+        <h2 style="color:#ff0000; margin-bottom:5px;">🎨 Texture Loader</h2>
         <p style="color:#888; font-size:0.85em; margin-bottom:20px;">
-            Importe des fichiers <code style="color:#ffaa00;">.css</code> pour personnaliser l'apparence du jeu.
-            <a href="TEXTURE_DOCUMENTATION.html" target="_blank" style="color:#ffcc00;">📄 Documentation textures</a>
+            Importe des fichiers <code style="color:#ffa500;">.css</code> pour personnaliser l'apparence du jeu.
+            <a href="TEXTURE_DOCUMENTATION.html" target="_blank" style="color:#ff6b6b;">📄 Documentation textures</a>
         </p>
 
         <!-- Zone d'import fichier -->
-        <div style="background:rgba(0,0,0,0.5); border:2px dashed #cc7700; border-radius:8px; padding:25px; text-align:center; margin-bottom:20px;"
+        <div style="background:rgba(0,0,0,0.5); border:2px dashed #8b0000; border-radius:8px; padding:25px; text-align:center; margin-bottom:20px;"
              id="textureDropZone"
-             ondragover="event.preventDefault(); this.style.borderColor='#ffcc00';"
-             ondragleave="this.style.borderColor='#cc7700';"
+             ondragover="event.preventDefault(); this.style.borderColor='#ff0000';"
+             ondragleave="this.style.borderColor='#8b0000';"
              ondrop="handleTextureDrop(event)">
             <div style="font-size:2.5em; margin-bottom:10px;">🎨</div>
-            <p style="color:#ffaa00; margin-bottom:12px;">Glisse-dépose un fichier <strong>.css</strong> ici</p>
+            <p style="color:#ff6b6b; margin-bottom:12px;">Glisse-dépose un fichier <strong>.css</strong> ici</p>
             <p style="color:#555; font-size:0.8em; margin-bottom:14px;">— ou —</p>
-            <label style="cursor:pointer; background:linear-gradient(135deg,#3a1a00,#8a4400); border:1px solid #cc7700; color:#fff; padding:10px 20px; border-radius:6px; font-family:Courier New; font-weight:bold; font-size:13px; text-transform:uppercase; letter-spacing:1px;">
+            <label style="cursor:pointer; background:linear-gradient(135deg,#5a0000,#9b0000); border:1px solid #cc0000; color:#fff; padding:10px 20px; border-radius:6px; font-family:Courier New; font-weight:bold; font-size:13px; text-transform:uppercase; letter-spacing:1px;">
                 📂 Choisir un fichier .css
                 <input type="file" accept=".css" style="display:none;" onchange="loadTextureFile(this.files[0])">
             </label>
@@ -332,24 +341,24 @@ function showTextureView(content) {
 
         <!-- Nom du pack -->
         <div style="margin-bottom:15px; display:flex; gap:10px; align-items:center;">
-            <label style="color:#ffaa00; font-size:0.9em; white-space:nowrap;">Nom du pack :</label>
+            <label style="color:#ff6b6b; font-size:0.9em; white-space:nowrap;">Nom du pack :</label>
             <input type="text" id="texturePackName" placeholder="Mon Texture Pack" value="Texture Pack ${loaded.length + 1}"
-                style="flex:1; background:#0d0d0d; border:2px solid #5a2a00; color:#fff; padding:8px 12px; border-radius:6px; font-family:Courier New; font-size:13px;">
+                style="flex:1; background:#0d0d0d; border:2px solid #5a0000; color:#fff; padding:8px 12px; border-radius:6px; font-family:Courier New; font-size:13px;">
         </div>
 
         <!-- Éditeur CSS direct -->
         <div style="margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <h3 style="color:#ffaa00;">✏️ Éditeur CSS direct</h3>
+                <h3 style="color:#ff6b6b;">✏️ Éditeur CSS direct</h3>
                 <div style="display:flex; gap:8px;">
                     <button onclick="clearTextureEditor()" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#333,#555); border-color:#666;">🗑️ Vider</button>
                     <button onclick="previewTextureCss()" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#003a1a,#007733); border-color:#00aa55;">👁️ Aperçu</button>
-                    <button onclick="applyTextureFromEditor()" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#3a2200,#996600); border-color:#ffaa00;">✅ Appliquer</button>
+                    <button onclick="applyTextureFromEditor()" style="padding:6px 14px; font-size:12px;">✅ Appliquer</button>
                 </div>
             </div>
             <textarea id="textureCssEditor"
                 placeholder="/* Exemple de texture pack */\nbody {\n    background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2d 100%) !important;\n}\n.container {\n    border-color: #6600cc !important;\n    box-shadow: 0 0 40px rgba(102, 0, 204, 0.6) !important;\n}\nh1 {\n    color: #cc66ff !important;\n    text-shadow: 0 0 15px #cc66ff !important;\n}"
-                style="width:100%; height:220px; background:#0d0d0d; border:2px solid #5a2a00; color:#e0e0e0; font-family:'Courier New',monospace; font-size:13px; padding:14px; border-radius:6px; resize:vertical; box-sizing:border-box; outline:none; line-height:1.6;"
+                style="width:100%; height:220px; background:#0d0d0d; border:2px solid #5a0000; color:#e0e0e0; font-family:'Courier New',monospace; font-size:13px; padding:14px; border-radius:6px; resize:vertical; box-sizing:border-box; outline:none; line-height:1.6;"
                 spellcheck="false"
                 onkeydown="handleEditorTab(event)"></textarea>
         </div>
@@ -357,44 +366,28 @@ function showTextureView(content) {
         <!-- Texture packs chargés -->
         <div style="margin-bottom:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="color:#ffaa00;">🖼️ Texture Packs actifs (${loaded.length})</h3>
+                <h3 style="color:#ff6b6b;">🖼️ Texture Packs chargés (${loaded.length})</h3>
                 ${loaded.length > 0 ? `<button onclick="resetAllTextures(); showView('textures');" style="padding:6px 14px; font-size:12px; background:linear-gradient(135deg,#3a0000,#880000); border-color:#ff4444;">🔄 Tout réinitialiser</button>` : ''}
             </div>
             ${loaded.length === 0
                 ? '<p style="color:#555; font-style:italic;">Aucun texture pack chargé.</p>'
-                : loaded.map((p, i) => `
-                    <div style="background:rgba(60,30,0,0.4); border:1px solid #cc7700; border-radius:6px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                : loaded.map((p, i) => {
+                    const isDisabled = p.disabled || false;
+                    return `
+                    <div style="background:rgba(${isDisabled ? '40,40,40' : '0,60,0'},0.4); border:1px solid ${isDisabled ? '#555' : '#00aa00'}; border-radius:6px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; opacity:${isDisabled ? '0.6' : '1'};">
                         <div>
-                            <span style="color:#ffcc00; font-weight:bold;">🎨 ${p.name}</span>
-                            <span style="color:#888; font-size:0.8em; margin-left:8px;">${p.css.length} caractères CSS</span>
+                            <span style="color:${isDisabled ? '#888' : '#00ff00'}; font-weight:bold;">🎨 ${p.name}</span>
+                            <span style="color:#888; font-size:0.8em; margin-left:8px;">${p.css.length} car. CSS</span>
+                            ${isDisabled ? '<span style="color:#888; font-size:0.75em; margin-left:8px; font-style:italic;">— désactivé</span>' : ''}
                         </div>
                         <div style="display:flex; gap:8px; align-items:center;">
                             <span style="color:#555; font-size:0.75em;">chargé à ${p.loadedAt}</span>
+                            <button onclick="toggleTexturePack('${p.name}')" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,${isDisabled ? '#1a4400,#336600' : '#442200,#885500'}); border-color:${isDisabled ? '#44aa00' : '#cc7700'}; margin:0;">${isDisabled ? '▶️ Act.' : '⏸ Désact.'}</button>
                             <button onclick="removeTexturePack('${p.name}'); showView('textures');" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3a0000,#880000); border-color:#ff4444; margin:0;">🗑️</button>
                         </div>
-                    </div>`).join('')
+                    </div>`;
+                }).join('')
             }
-        </div>
-
-        <!-- Presets intégrés -->
-        <div style="margin-bottom:20px;">
-            <h3 style="color:#ffaa00; margin-bottom:12px;">✨ Presets rapides</h3>
-            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
-                ${[
-                    { name: 'Neon Purple', emoji: '💜', desc: 'Thème violet néon', fn: 'loadPresetTexture("neon_purple")' },
-                    { name: 'Ocean Blue', emoji: '🌊', desc: 'Thème bleu profond', fn: 'loadPresetTexture("ocean_blue")' },
-                    { name: 'Forest Dark', emoji: '🌿', desc: 'Thème vert sombre', fn: 'loadPresetTexture("forest_dark")' },
-                    { name: 'Gold Rush', emoji: '✨', desc: 'Thème or et noir', fn: 'loadPresetTexture("gold_rush")' },
-                    { name: 'Default (Rouge)', emoji: '🔴', desc: 'Thème d\'origine', fn: 'resetAllTextures(); showView("textures");' }
-                ].map(p => `
-                    <div style="background:rgba(0,0,0,0.4); border:1px solid #5a2a00; border-radius:8px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s;"
-                         onmouseenter="this.style.borderColor='#ffcc00'" onmouseleave="this.style.borderColor='#5a2a00'"
-                         onclick="${p.fn}">
-                        <div style="font-size:1.8em; margin-bottom:6px;">${p.emoji}</div>
-                        <div style="color:#ffcc00; font-weight:bold; font-size:0.9em;">${p.name}</div>
-                        <div style="color:#888; font-size:0.75em; margin-top:4px;">${p.desc}</div>
-                    </div>`).join('')}
-            </div>
         </div>
 
         <div id="textureLog"></div>
@@ -403,9 +396,28 @@ function showTextureView(content) {
 
 // ─── Fonctions utilitaires de la vue texture ─────────────────
 
+/** Active ou désactive un texture pack (sans le supprimer) */
+function toggleTexturePack(name) {
+    const pack = _loadedTexturePacks.find(p => p.name === name);
+    if (!pack) return;
+    pack.disabled = !pack.disabled;
+    rebuildTextureStyle();
+    showView('textures');
+}
+
+/** Reconstruit la balise style en ignorant les packs désactivés */
+function rebuildTextureStyle() {
+    const styleEl = document.getElementById('rsc-texture-style');
+    if (!styleEl) return;
+    styleEl.textContent = _loadedTexturePacks
+        .filter(p => !p.disabled)
+        .map(p => '/* === ' + p.name + ' === */\n' + p.css)
+        .join('\n\n');
+}
+
 function handleTextureDrop(event) {
     event.preventDefault();
-    document.getElementById('textureDropZone').style.borderColor = '#cc7700';
+    document.getElementById('textureDropZone').style.borderColor = '#8b0000';
     const file = event.dataTransfer.files[0];
     if (file && file.name.endsWith('.css')) {
         loadTextureFile(file);
@@ -458,8 +470,8 @@ function showTextureError(msg) {
     const log = document.getElementById('textureLog');
     if (!log) return;
     log.innerHTML = `
-        <div style="background:rgba(100,50,0,0.4); border:2px solid #ffaa00; border-radius:6px; padding:14px; color:#ffcc00;">
-            <strong>⚠️ Erreur :</strong> ${msg}
+        <div style="background:rgba(139,0,0,0.4); border:2px solid #ff0000; border-radius:6px; padding:14px; color:#ff6b6b;">
+            <strong>❌ Erreur :</strong> ${msg}
         </div>`;
 }
 
@@ -588,18 +600,26 @@ function showModView(content) {
 
         <!-- Mods chargés -->
         <div style="margin-bottom:20px;">
-            <h3 style="color:#ff6b6b; margin-bottom:12px;">📋 Mods actifs (${loaded.length})</h3>
+            <h3 style="color:#ff6b6b; margin-bottom:12px;">📋 Mods chargés (${loaded.length})</h3>
             ${loaded.length === 0 
                 ? '<p style="color:#555; font-style:italic;">Aucun mod chargé.</p>'
-                : loaded.map(m => `
-                    <div style="background:rgba(0,80,0,0.3); border:1px solid #00aa00; border-radius:6px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                : loaded.map((m, i) => {
+                    const disabled = _disabledMods.has(i);
+                    return `
+                    <div style="background:rgba(${disabled ? '40,40,40' : '0,80,0'},0.3); border:1px solid ${disabled ? '#555' : '#00aa00'}; border-radius:6px; padding:12px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; opacity:${disabled ? '0.6' : '1'};">
                         <div>
-                            <span style="color:#00ff00; font-weight:bold;">📦 ${m.name}</span>
+                            <span style="color:${disabled ? '#888' : '#00ff00'}; font-weight:bold;">📦 ${m.name}</span>
                             ${m.version ? `<span style="color:#888; font-size:0.8em; margin-left:8px;">v${m.version}</span>` : ''}
                             ${m.author ? `<span style="color:#888; font-size:0.8em; margin-left:8px;">par ${m.author}</span>` : ''}
+                            ${disabled ? '<span style="color:#888; font-size:0.75em; margin-left:8px; font-style:italic;">— désactivé</span>' : ''}
                         </div>
-                        <span style="color:#555; font-size:0.75em;">chargé à ${m.loadedAt}</span>
-                    </div>`).join('')
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <span style="color:#555; font-size:0.75em;">chargé à ${m.loadedAt}</span>
+                            <button onclick="RSC_MOD.toggleMod(${i})" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,${disabled ? '#1a4400,#336600' : '#442200,#885500'}); border-color:${disabled ? '#44aa00' : '#cc7700'}; margin:0;">${disabled ? '▶️ Act.' : '⏸ Désact.'}</button>
+                            <button onclick="RSC_MOD.deleteMod(${i})" style="padding:4px 10px; font-size:11px; background:linear-gradient(135deg,#3a0000,#880000); border-color:#ff4444; margin:0;">🗑️</button>
+                        </div>
+                    </div>`;
+                }).join('')
             }
         </div>
 
